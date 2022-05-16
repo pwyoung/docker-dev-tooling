@@ -70,8 +70,11 @@ RUN echo 'git log --oneline --graph' > /usr/local/bin/gl && \
   echo 'emacs -nw $@' > /usr/local/bin/e && \
   echo 'ls --color=auto -ltr $@' > /usr/local/bin/l && \
   echo 'echo "$PWD" > ~/.marked_path' > /usr/local/bin/m && \
-  chmod +x /usr/local/bin/{gl,gs,e,l,m} && \
-  chmod +x /etc/profile.d/z
+  chmod +x /usr/local/bin/{gl,gs,e,l,m}
+
+# GIT
+ENV PKGS="git"
+RUN apt-get update && apt-get install -y $PKGS
 
 # CLEANUP
 RUN rm -rf /tmp/*

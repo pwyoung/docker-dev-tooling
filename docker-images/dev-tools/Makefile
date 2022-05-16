@@ -45,6 +45,7 @@ TC:=$(TC) && aws-v2 --version
 TC:=$(TC) && sam --version
 TC:=$(TC) && terraform --version
 TC:=$(TC) && terragrunt --version
+TC:=$(TC) && git --version
 
 all: test
 
