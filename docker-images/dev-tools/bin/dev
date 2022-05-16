@@ -1,0 +1,14 @@
+#!/bin/bash
+
+IMAGE="aws-tools:latest"
+
+# Run once and terminate
+DARGS="-t -i --rm"
+
+# Share files here
+DARGS+=" -v /home/dev:/home/dev"
+
+# Specify the command to run
+CMD="bash"
+
+docker run $DARGS $IMAGE $CMD $@
