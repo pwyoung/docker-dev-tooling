@@ -5,4 +5,4 @@ if [ -z "$DOT_AWS" ]; then
     DOT_AWS=$HOME/.aws
 fi
 
-docker run -t -i --rm -v $DOT_AWS:/home/dev/.aws aws-tools:latest bash -c "aws-shell $ARGS"
+docker run -t -i --rm -v $DOT_AWS:/home/dev/.aws dev-tools:latest bash -c "aws-shell $ARGS"

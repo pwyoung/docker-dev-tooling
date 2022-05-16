@@ -1,6 +1,6 @@
 #!/bin/bash
 
-IMAGE="aws-tools:latest"
+IMAGE="dev-tools:latest"
 
 # Run once and terminate
 DARGS="-t -i --rm"

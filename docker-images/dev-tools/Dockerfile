@@ -58,7 +58,7 @@ RUN apt-get update && apt-get install -y $PKGS2
 RUN cd /tmp && \
   curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add - && \
   apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main" && \
-  apt-get update && sudo apt-get install terraform
+  apt-get update && sudo apt-get install terraform=1.1.4
 
 RUN cd /tmp && \
   wget https://github.com/gruntwork-io/terragrunt/releases/download/v0.37.1/terragrunt_linux_amd64 -O /usr/local/bin/terragrunt && \
@@ -68,12 +68,13 @@ RUN cd /tmp && \
 RUN echo 'git log --oneline --graph' > /usr/local/bin/gl && \
   echo 'git status $@' > /usr/local/bin/gs && \
   echo 'emacs -nw $@' > /usr/local/bin/e && \
+  echo 'rm -rf ./*~ ./*# 2>/dev/null' > /usr/local/bin/c && \
   echo 'ls --color=auto -ltr $@' > /usr/local/bin/l && \
   echo 'echo "$PWD" > ~/.marked_path' > /usr/local/bin/m && \
-  chmod +x /usr/local/bin/{gl,gs,e,l,m}
+  chmod +x /usr/local/bin/{gl,gs,e,c,l,m}
 
 # GIT
-ENV PKGS="git"
+ENV PKGS="git tree"
 RUN apt-get update && apt-get install -y $PKGS
 
 # CLEANUP

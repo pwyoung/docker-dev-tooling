@@ -6,7 +6,7 @@ MAKEFILE_PATH=$(dir $(realpath $(firstword $(MAKEFILE_LIST))))
 SHELL:=/bin/bash
 
 DOCKER_TAG:=latest
-DOCKER_IMAGE:=aws-tools:$(DOCKER_TAG)
+DOCKER_IMAGE:=dev-tools:$(DOCKER_TAG)
 
 # Match the UID of the current user
 # This is for the aws-shell which wants to write to ~/.aws/
