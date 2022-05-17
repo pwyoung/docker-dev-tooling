@@ -12,6 +12,6 @@ DARGS+=" -v /home/dev:/home/dev"
 DARGS+=" --hostname dev-tools"
 
 # Specify the command to run
-CMD="bash"
+CMD="bash -l"
 
 docker run $DARGS $IMAGE $CMD $@
