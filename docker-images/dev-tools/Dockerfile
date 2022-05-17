@@ -19,7 +19,7 @@ RUN useradd --uid $DEVUID --create-home --home-dir $DEVHOME $DEVUSER \
         && echo -e "$DEVUSER:$DEVPW" | chpasswd \
         && usermod -aG sudo $DEVUSER
 
-ENV PKGS="wget curl unzip sudo unzip less jq groff"
+ENV PKGS="wget curl unzip sudo unzip less jq groff git tree emacs-nox software-properties-common"
 RUN apt-get update && apt-get install -y $PKGS
 
 # Get aws-shell (comes with AWS CLI v1)
@@ -53,8 +53,6 @@ RUN mkdir -p /tmp/aws-sam-cli && \
 
 # Add Terraform and Terragrunt
 #   https://www.terraform.io/downloads
-ENV PKGS2="emacs-nox software-properties-common"
-RUN apt-get update && apt-get install -y $PKGS2
 RUN cd /tmp && \
   curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add - && \
   apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main" && \
@@ -65,6 +63,7 @@ RUN cd /tmp && \
   chmod 0755 /usr/local/bin/terragrunt
 
 # Conveniences
+#   These would normally be aliases
 RUN echo 'git log --oneline --graph' > /usr/local/bin/gl && \
   echo 'git status $@' > /usr/local/bin/gs && \
   echo 'git branch' > /usr/local/bin/gb && \
@@ -73,10 +72,6 @@ RUN echo 'git log --oneline --graph' > /usr/local/bin/gl && \
   echo 'ls --color=auto -ltr $@' > /usr/local/bin/l && \
   echo 'echo "$PWD" > ~/.marked_path' > /usr/local/bin/m && \
   chmod 0755 /usr/local/bin/{gl,gs,gb,e,c,l,m}
-
-# GIT
-ENV PKGS="git tree"
-RUN apt-get update && apt-get install -y $PKGS
 
 # CLEANUP
 RUN rm -rf /tmp/*
