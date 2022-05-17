@@ -67,11 +67,12 @@ RUN cd /tmp && \
 # Conveniences
 RUN echo 'git log --oneline --graph' > /usr/local/bin/gl && \
   echo 'git status $@' > /usr/local/bin/gs && \
+  echo 'git branch' > /usr/local/bin/gb && \
   echo 'emacs -nw $@' > /usr/local/bin/e && \
   echo 'rm -rf ./*~ ./*# 2>/dev/null' > /usr/local/bin/c && \
   echo 'ls --color=auto -ltr $@' > /usr/local/bin/l && \
   echo 'echo "$PWD" > ~/.marked_path' > /usr/local/bin/m && \
-  chmod +x /usr/local/bin/{gl,gs,e,c,l,m}
+  chmod 0755 /usr/local/bin/{gl,gs,gb,e,c,l,m}
 
 # GIT
 ENV PKGS="git tree"
