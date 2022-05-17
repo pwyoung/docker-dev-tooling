@@ -8,6 +8,9 @@ DARGS="-t -i --rm"
 # Share files here
 DARGS+=" -v /home/dev:/home/dev"
 
+# Set hostname
+DARGS+=" --hostname dev-tools"
+
 # Specify the command to run
 CMD="bash"
 
