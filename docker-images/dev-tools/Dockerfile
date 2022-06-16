@@ -19,7 +19,7 @@ RUN useradd --uid $DEVUID --create-home --home-dir $DEVHOME $DEVUSER \
         && echo -e "$DEVUSER:$DEVPW" | chpasswd \
         && usermod -aG sudo $DEVUSER
 
-ENV PKGS="wget curl unzip sudo unzip less jq groff git tree emacs-nox software-properties-common"
+ENV PKGS="wget curl unzip sudo unzip less jq groff git tree emacs-nox software-properties-common graphviz dnsutils whois"
 RUN apt-get update && apt-get install -y $PKGS
 
 # Get aws-shell (comes with AWS CLI v1)
@@ -56,11 +56,13 @@ RUN mkdir -p /tmp/aws-sam-cli && \
 RUN cd /tmp && \
   curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add - && \
   apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main" && \
-  apt-get update && sudo apt-get install terraform=1.1.4
+  apt-get update && sudo apt-get install terraform
+  #apt-get update && sudo apt-get install terraform=1.1.4
 
 RUN cd /tmp && \
   wget https://github.com/gruntwork-io/terragrunt/releases/download/v0.37.1/terragrunt_linux_amd64 -O /usr/local/bin/terragrunt && \
-  chmod 0755 /usr/local/bin/terragrunt
+  chmod 0755 /usr/local/bin/terragrunt && \
+  terragrunt --version
 
 # Conveniences
 #   These would normally be aliases
@@ -72,6 +74,15 @@ RUN echo 'git log --oneline --graph' > /usr/local/bin/gl && \
   echo 'ls --color=auto -ltr $@' > /usr/local/bin/l && \
   echo 'echo "$PWD" > ~/.marked_path' > /usr/local/bin/m && \
   chmod 0755 /usr/local/bin/{gl,gs,gb,e,c,l,m}
+
+# Azure-CLI
+#  https://docs.microsoft.com/en-us/cli/azure/install-azure-cli-linux?pivots=apt
+RUN apt-get install -y ca-certificates curl apt-transport-https lsb-release gnupg && \
+  curl -sL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor | tee /etc/apt/trusted.gpg.d/microsoft.gpg > /dev/null && \
+  echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/azure-cli.list && \
+  apt-get update -y && apt-get install -y azure-cli && \
+  az --version | grep azure-cli
+
 
 # CLEANUP
 RUN rm -rf /tmp/*
