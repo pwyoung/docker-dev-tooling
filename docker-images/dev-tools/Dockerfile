@@ -25,16 +25,15 @@ RUN apt-get update && apt-get install -y $PKGS
 # Get aws-shell (comes with AWS CLI v1)
 RUN pip install aws-shell
 
-# Add AWS CLI to v2 ALONGSIDE AWS CLI v1
-# NOTE: aws-shell expects AWS-CLI-V1. It fails with V2 (without some hacking). Since aws-shell is beta, avoid hacking.
+#  curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.0.30.zip" -o "awscliv2.zip" && \
 #
 RUN cd /tmp && \
-  curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.0.30.zip" -o "awscliv2.zip" && \
+  curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip"        -o "awscliv2.zip" && \
   unzip ./awscliv2.zip && \
   /tmp/aws/install -b /root && \
   mv /root/aws /usr/local/bin/aws-v2 && \
   mv /usr/local/bin/aws /usr/local/bin/aws-v1 && \
-  ln -s /usr/local/bin/aws-v1 /usr/local/bin/aws && \
+  ln -s /usr/local/bin/aws-v2 /usr/local/bin/aws && \
   echo 'Sanity check installed tools' && \
   /usr/local/bin/aws-v1 --version && \
   /usr/local/bin/aws-v2 --version && \
