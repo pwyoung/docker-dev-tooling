@@ -6,7 +6,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 SHELL ["/bin/bash", "-c"]
 
 # Dev conveniences
-ENV PKGS="$PKGS make python3-pip"
+ARG PKGS="$PKGS make python3-pip"
 
 RUN apt-get update && apt-get install -y $PKGS
 

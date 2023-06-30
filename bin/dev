@@ -1,0 +1,34 @@
+#!/bin/bash
+
+# Run the docker container
+#
+# Map ~/home_dev to /home/dev so that files can be edited in the host or container
+#
+# If no args are given, log into it.
+# If args are given, then run them
+
+IMAGE="dev-tools:latest"
+
+# Docker run args
+DARGS=""
+
+# Run with an interactive terminal
+DARGS+=" -t -i"
+
+# Remove the container when it exits
+DARGS+=" --rm"
+
+# Share files here
+DARGS+=" -v ${HOME}/home_dev:/home/dev"
+
+# Set hostname
+DARGS+=" --hostname dev-tools"
+
+# Specify the command to run
+if [ $# -eq 0 ]; then
+    CMD="bash -l"
+else
+    CMD="$@"
+fi
+
+docker run $DARGS $IMAGE $CMD

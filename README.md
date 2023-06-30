@@ -23,3 +23,7 @@ Create a docker image for running things such as:
   aws cli user that runs the script (generate-aws-cli-mfa-credentials.sh).
   There is also a script showing how to decrypt a symmetrically encrypted version
   of the credentials file produced.
+
+- ./bin
+  Contains commands that can be used to run the container.
+  See ./bin/README.adoc or the individual scripts for details.

@@ -7,26 +7,33 @@ ARG DEBIAN_FRONTEND=noninteractive
 # Default shell
 SHELL ["/bin/bash", "-c"]
 
+ARG PKGS="wget curl unzip sudo unzip less jq groff git tree emacs-nox software-properties-common graphviz dnsutils whois"
+RUN apt-get update && apt-get install -y $PKGS
+
 # Remember, ARGs are not secure
 ARG DEVUSER=dev
 ARG DEVPW=dev
 ARG DEVHOME=/home/dev
 ARG DEVUID=1000
 
-# Create a non-root user with root/sudo privileges
+# Create the 'wheel' group
+RUN groupadd wheel
+
+# Create a non-root user (with group 'wheel')
 RUN useradd --uid $DEVUID --create-home --home-dir $DEVHOME $DEVUSER \
         && chown -R $DEVUSER:$DEVUSER $DEVHOME \
         && echo -e "$DEVUSER:$DEVPW" | chpasswd \
-        && usermod -aG sudo $DEVUSER
+        && usermod -aG wheel $DEVUSER
 
-ENV PKGS="wget curl unzip sudo unzip less jq groff git tree emacs-nox software-properties-common graphviz dnsutils whois"
-RUN apt-get update && apt-get install -y $PKGS
+# Let any user in the group 'wheel' run sudo without a password
+RUN echo '%wheel         ALL = (ALL) NOPASSWD: ALL' > /etc/sudoers.d/wheel && \
+  chmod 0440 /etc/sudoers.d/wheel
+
 
 # Get aws-shell (comes with AWS CLI v1)
 RUN pip install aws-shell
 
-#  curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.0.30.zip" -o "awscliv2.zip" && \
-#
+# https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
 RUN cd /tmp && \
   curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip"        -o "awscliv2.zip" && \
   unzip ./awscliv2.zip && \
@@ -82,6 +89,9 @@ RUN apt-get install -y ca-certificates curl apt-transport-https lsb-release gnup
   apt-get update -y && apt-get install -y azure-cli && \
   az --version | grep azure-cli
 
+# SSH server
+RUN sudo apt install -y openssh-server && \
+  sudo mkdir -p /run/sshd
 
 # CLEANUP
 RUN rm -rf /tmp/*
