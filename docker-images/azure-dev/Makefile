@@ -6,7 +6,7 @@ MAKEFILE_PATH=$(dir $(realpath $(firstword $(MAKEFILE_LIST))))
 SHELL:=/bin/bash
 
 DOCKER_TAG:=latest
-DOCKER_IMAGE:=dev-tools:$(DOCKER_TAG)
+DOCKER_IMAGE:=azure-dev:$(DOCKER_TAG)
 
 # "docker build" args
 #
@@ -23,14 +23,7 @@ RARGS:=-t -i
 RARGS:=$(RARGS) --rm
 
 # Test command
-TC:=aws --version
-TC:=$(TC) && az --version | grep azure-cli
-TC:=$(TC) && terraform --version
-TC:=$(TC) && terragrunt --version
-TC:=$(TC) && sudo su - nodedev -c 'node --version'
-TC:=$(TC) && sudo su - nodedev -c 'npm --version'
-TC:=$(TC) && dotnet --info | head -3
-TC:=$(TC) && mitmproxy --version
+TC:=az --version | grep azure-cli
 
 all: test
 

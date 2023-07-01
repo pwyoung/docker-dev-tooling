@@ -6,7 +6,12 @@ MAKEFILE_PATH=$(dir $(realpath $(firstword $(MAKEFILE_LIST))))
 SHELL:=/bin/bash
 
 DOCKER_TAG:=latest
-DOCKER_IMAGE:=dev-tools:$(DOCKER_TAG)
+DOCKER_IMAGE:=aws-dev:$(DOCKER_TAG)
+
+# Support using a different AWS credential directory
+ifndef DOT_AWS
+override DOT_AWS:=$(HOME)/.aws
+endif
 
 # "docker build" args
 #
@@ -21,16 +26,12 @@ BARGS:=-t $(DOCKER_IMAGE)
 RARGS:=-t -i
 # Remove container when it stops running
 RARGS:=$(RARGS) --rm
+# Share AWS credentials
+# Use the ENV $DEVHOME which was set earlier
+RARGS:=$(RARGS) -v $(DOT_AWS):$(DEVHOME)/.aws
 
 # Test command
 TC:=aws --version
-TC:=$(TC) && az --version | grep azure-cli
-TC:=$(TC) && terraform --version
-TC:=$(TC) && terragrunt --version
-TC:=$(TC) && sudo su - nodedev -c 'node --version'
-TC:=$(TC) && sudo su - nodedev -c 'npm --version'
-TC:=$(TC) && dotnet --info | head -3
-TC:=$(TC) && mitmproxy --version
 
 all: test
 

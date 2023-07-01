@@ -1,4 +1,4 @@
-.PHONY:=all clean build test review-image
+.PHONY:=all clean build test build login review-image
 
 # Directory containing this makefile. Includes trailing /
 MAKEFILE_PATH=$(dir $(realpath $(firstword $(MAKEFILE_LIST))))
@@ -6,7 +6,7 @@ MAKEFILE_PATH=$(dir $(realpath $(firstword $(MAKEFILE_LIST))))
 SHELL:=/bin/bash
 
 DOCKER_TAG:=latest
-DOCKER_IMAGE:=dev-tools:$(DOCKER_TAG)
+DOCKER_IMAGE:=dotnet-dev:$(DOCKER_TAG)
 
 # "docker build" args
 #
@@ -14,6 +14,7 @@ DOCKER_IMAGE:=dev-tools:$(DOCKER_TAG)
 BARGS:=-t $(DOCKER_IMAGE)
 # Force (re)build to occur
 #BARGS:=$(BARGS) --no-cache
+#
 
 # "docker run" args
 #
@@ -23,14 +24,8 @@ RARGS:=-t -i
 RARGS:=$(RARGS) --rm
 
 # Test command
-TC:=aws --version
-TC:=$(TC) && az --version | grep azure-cli
-TC:=$(TC) && terraform --version
-TC:=$(TC) && terragrunt --version
-TC:=$(TC) && sudo su - nodedev -c 'node --version'
-TC:=$(TC) && sudo su - nodedev -c 'npm --version'
-TC:=$(TC) && dotnet --info | head -3
-TC:=$(TC) && mitmproxy --version
+TC:=dotnet --info | head -3
+#TC:=$(TC) && mono --version
 
 all: test
 
@@ -44,7 +39,11 @@ build:
 
 test: build
 	$(info Running test scripts)
-	docker run $(RARGS) $(DOCKER_IMAGE) bash -c "$(TC)"
+	docker run $(RARGS) $(DOCKER_IMAGE) bash -l -c "$(TC)"
+
+login: build
+        $(info Logging into container)
+        docker run $(RARGS) $(DOCKER_IMAGE) bash -l
 
 review-image:
 	echo "Review Docker Image"

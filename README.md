@@ -1,22 +1,19 @@
 # GOAL
 
 Create a docker image for running things such as:
-- AWS CLI tools
+- AWS and Azure CLI tools
 - Terraform
 - Terragrunt
+- OpenSSH Server
 
 # Directories
 
-- ./docker-images/aws-cli-shell-docker-image
-  This creates a docker image which can be used to run
-    - aws cli commands
-    - aws shell
-    - aws sam commands
-    - Whatever else we add to the Dockerfile
-
 - ./docker-images/python-dev
   This creates a docker image based on Ubuntu, configured for Python3 development.
-  This is used by aws-cli-shell-docker-image/Dockerfile
+  This is the basis for the dev-tools image
+
+- ./docker-images/dev-tools
+  This creates a docker image which can be used to run the additional tools beyond Python
 
 - ./tools/mfa-with-aws-cli
   This contains code to produce temporary (self-expiring) credentials based on the

@@ -1,34 +1,256 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-# Run the docker container
-#
-# Map ~/home_dev to /home/dev so that files can be edited in the host or container
-#
-# If no args are given, log into it.
-# If args are given, then run them
+set -e
 
+################################################################################
+
+# Docker image for dev server container
 IMAGE="dev-tools:latest"
 
-# Docker run args
-DARGS=""
+# Name for the container when running
+CONTAINER_NAME='devserver'
 
-# Run with an interactive terminal
-DARGS+=" -t -i"
+# Local SSH port to the dev container's SSH server
+LOCAL_SSH_PORT='2222'
 
-# Remove the container when it exits
-DARGS+=" --rm"
+# ~/.ssh/config entry to support passwordless SSH to the dev server
+SSH_ALIAS='devserver'
 
-# Share files here
-DARGS+=" -v ${HOME}/home_dev:/home/dev"
+################################################################################
 
-# Set hostname
-DARGS+=" --hostname dev-tools"
+run_container() {
+    # Run the docker container.
+    #
+    # Map ~/home_dev to /home/dev so that files can be edited in the host or container
+    #
+    # Start the SSH server.
+    #
+    # If no args are given, log into it.
+    # If args are given, then run them
 
-# Specify the command to run
-if [ $# -eq 0 ]; then
-    CMD="bash -l"
-else
-    CMD="$@"
+    # Docker run args
+    DARGS=""
+
+    # Map the SSH server port
+    #
+    # Only allow local connections
+    DARGS+=" -p 127.0.0.1:${LOCAL_SSH_PORT}:22/tcp"
+    #
+    # Allow connections from outside this host
+    #DARGS+=" -p ${LOCAL_SSH_PORT}:22"
+
+    # Alternative to SSH tunnels (to the proxy)
+    #DARGS+=" -p 127.0.0.1:8080:8080"
+    #DARGS+=" -p 127.0.0.1:8081:8081"
+    #DARGS+=" -p 127.0.0.1:4200:4200"
+
+    # Run with an interactive terminal
+    #DARGS+=" -t -i"
+    # OR,
+    # Run as a Daemon/Background process
+    DARGS+=" -d"
+
+    # Remove the container when it exits
+    DARGS+=" --rm"
+
+    # Share files here
+    DARGS+=" -v ${HOME}/home_dev:/home/dev"
+
+    # Set hostname
+    DARGS+=" --hostname $CONTAINER_NAME"
+
+    # Set a name for the container
+    DARGS+=" --name $CONTAINER_NAME"
+
+    # Start SSH server, run a sleep command forever, and return immediately
+    CMD="sudo service ssh start && service ssh status && nohup sleep infinity"
+    docker run $DARGS $IMAGE bash -c "$CMD"
+}
+
+# Ensure that the dev server is running
+ensure_server_is_running() {
+    if ! docker inspect $CONTAINER_NAME 2>/dev/null | jq -r '.[0].State.Status' | grep 'running' >/dev/null; then
+        run_container
+    fi
+}
+
+# Wait for the container to allow SSH connections
+wait_for_ssh() {
+    for i in {1..9}; do
+        echo "Attempt to SSH to $SSH_ALIAS number $i"
+        ssh $SSH_ALIAS 'hostname' && break
+        sleep 1
+    done
+
+    if [[ $i -eq 9 ]]; then
+        echo "$SSH_ALIAS container is not responding"
+        exit 1
+    fi
+}
+
+run_mitm() {
+    # Run the proxy in the dev container (in the background)
+    if ! ssh $SSH_ALIAS "ps | grep mitmweb" &>/dev/null; then
+        echo "Running mitweb"
+        ssh $SSH_ALIAS "nohup mitmweb &>/dev/null &"
+    fi
+}
+
+create_tunnel() {
+    host_port="$1"
+    container_port="$2"
+
+    tunnel_label="$host_port -> $container_port"
+    tunnel_cmd="$tunnel_tag ssh -f -N -L $host_port:localhost:$container_port $SSH_ALIAS"
+
+    if ps x | grep ssh | grep "Xaa" &>/dev/null; then
+        echo "Tunnel exists: $tunnel_label"
+    else
+        echo "Running tunnel: $tunnel_label"
+        $tunnel_cmd
+    fi
+}
+
+# Kill all SSH tunnels (that look like the ones we created)
+kill_all_ssh_tunnels() {
+    PIDS=$(ps eaux | grep -v grep | grep 'ssh -f -N -L' | awk '{print $2}')
+    for i in $PIDS; do
+        echo "Killing pid $i"
+        kill -15 $i
+    done
+}
+
+# Set up SSH tunnels to the container
+create_tunnels() {
+    create_tunnel "8080" "8080"
+    create_tunnel "8081" "8081"
+    create_tunnel "4200" "4200"
+}
+
+open_browser() {
+    if command -v google-chrome; then
+        google-chrome 'http://localhost:8081'
+    elif command -v open; then
+        open 'http://localhost:8081'
+    fi
+}
+
+setup_proxy() {
+    ensure_server_is_running
+    wait_for_ssh
+    run_mitm
+    create_tunnels
+    open_browser
+}
+
+run_cmd_in_devserver_container() {
+    CMD="$1"
+
+    ensure_server_is_running
+
+    docker exec -i -t $CONTAINER_NAME bash -l -c "$CMD"
+}
+
+
+# Start an ephemeral container and run the given command in it
+run_cmd_in_ephemeral_container() {
+    CMD="$1"
+
+    # Docker run args
+    DARGS=""
+
+    # Run with an interactive terminal
+    DARGS+=" -t -i"
+    # OR,
+    # Run as a daemon/background process (not interactive)
+    #DARGS+=" -d"
+
+    # Remove the container when it exits
+    DARGS+=" --rm"
+
+    # Share files here
+    DARGS+=" -v ${HOME}/home_dev:/home/dev"
+
+    # Set hostname
+    DARGS+=" --hostname $CONTAINER_NAME"
+
+    # Specify the command to run
+    docker run $DARGS $IMAGE $CMD
+}
+
+kill_server() {
+    docker kill $CONTAINER_NAME &>/dev/null || true
+}
+
+login() {
+    ensure_server_is_running
+
+    # These all work
+    #run_cmd_in_devserver_container "bash -l"
+    #ssh -F /dev/null -o "StrictHostKeychecking=no" -o "IdentitiesOnly=yes" -i ~/home_dev/.ssh/id_rsa -p $LOCAL_SSH_PORT -l dev localhost
+    ssh $SSH_ALIAS
+}
+
+show_usage() {
+    cat <<EOF
+    $0 [-h|--help]
+    $0 [-l|--login]
+    $0 [-s|--run-server]
+    $0 [-c <CMD>|--run-command-in-server <CMD>]
+    $0 [-e <CMD>|--run-command-in-ephemeral-container <CMD>]
+    $0 [-k|--kill-server]
+    $0 [-S|--STOP-server]
+EOF
+}
+
+if [[ $# -eq 0 ]]; then
+    show_usage
+    exit 0
 fi
 
-docker run $DARGS $IMAGE $CMD
+while [[ $# -gt 0 ]]; do
+  key="$1"
+
+  case $key in
+    -l|--login)
+        shift
+        login
+        ;;
+    -s|--run-server)
+        shift
+        ensure_server_is_running
+        ;;
+    -k|--kill-server)
+        shift
+        kill_server
+        ;;
+    -c|--run-command-in-server)
+        shift
+        run_cmd_in_devserver_container "$@"
+        ;;
+    -e|--run-command-in-ephemeral-container)
+        shift
+        run_cmd_in_ephemeral_container "$@"
+        ;;
+    -p|--setup-proxy)
+        shift
+        setup_proxy
+        ;;
+    -S|--STOP-server)
+        shift
+        stop_server
+        ;;
+    -K|--KILL-all-ssh-tunnels)
+        shift
+        kill_all_ssh_tunnels
+        ;;
+    -h|--help)
+        shift
+        show_usage
+      ;;
+    *)    # unknown option
+      POSITIONAL+=("$1") # save it in an array for later
+      shift # past argument
+      ;;
+  esac
+done

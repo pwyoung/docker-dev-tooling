@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# Allow this to be called from anywhere.
+MY_DIR=$(cd "$(dirname "$0")"; pwd -P)
+
+$MY_DIR/devcommand az $@
+
+

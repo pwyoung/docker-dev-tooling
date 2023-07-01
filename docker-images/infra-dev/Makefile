@@ -1,4 +1,4 @@
-.PHONY:=all clean build test review-image
+.PHONY:=all clean build deps test review-image
 
 # Directory containing this makefile. Includes trailing /
 MAKEFILE_PATH=$(dir $(realpath $(firstword $(MAKEFILE_LIST))))
@@ -6,7 +6,7 @@ MAKEFILE_PATH=$(dir $(realpath $(firstword $(MAKEFILE_LIST))))
 SHELL:=/bin/bash
 
 DOCKER_TAG:=latest
-DOCKER_IMAGE:=dev-tools:$(DOCKER_TAG)
+DOCKER_IMAGE:=infra-dev:$(DOCKER_TAG)
 
 # "docker build" args
 #
@@ -23,14 +23,8 @@ RARGS:=-t -i
 RARGS:=$(RARGS) --rm
 
 # Test command
-TC:=aws --version
-TC:=$(TC) && az --version | grep azure-cli
-TC:=$(TC) && terraform --version
+TC:=terraform --version
 TC:=$(TC) && terragrunt --version
-TC:=$(TC) && sudo su - nodedev -c 'node --version'
-TC:=$(TC) && sudo su - nodedev -c 'npm --version'
-TC:=$(TC) && dotnet --info | head -3
-TC:=$(TC) && mitmproxy --version
 
 all: test
 
