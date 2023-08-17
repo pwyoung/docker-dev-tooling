@@ -159,15 +159,30 @@ install_mitm_cert() {
         return
     fi
 
+    # Tell CLI tools (that respect this standard) to use these env vars
     CMD="export http_proxy=127.0.0.1:8080 && export https_proxy=127.0.0.1:8080"
+
+    # Get the ca-cert for the mitmproxy
     CMD="$CMD && curl --proxy 127.0.0.1:8080 --cacert ~/.mitmproxy/mitmproxy-ca-cert.pem https://example.com/"
+
     docker exec -i -t $CONTAINER_NAME bash -l -c "$CMD"
 }
 
 open_proxying_shell_in_dev_container() {
     # Open a shell in the container with the proxy env vars setup
+
+    # Tell CLI tools (that respect this standard) to use these env vars
     CMD="export http_proxy=127.0.0.1:8080 && export https_proxy=127.0.0.1:8080"
-    CMD="$CMD && aws sts get-caller-identity && bash -l"
+
+    # Tell the AWS CLI tools to trust our cert
+    CMD="$CMD && export AWS_CA_BUNDLE=~/.mitmproxy/mitmproxy-ca-cert.pem"
+
+    # Make a test AWS CLI call
+    CMD="$CMD && aws sts get-caller-identity"
+
+    # Open a login shell
+    CMD="$CMD && bash -l"
+
     docker exec -i -t $CONTAINER_NAME bash -l -c "$CMD"
 }
 
@@ -177,16 +192,18 @@ setup_proxy() {
     wait_for_ssh
 
     run_mitm_web
-    open_browser
     #run_mitm_dump
 
     install_mitm_cert
 
     create_tunnels
 
+    open_browser
+
     show_ports_open
 
     open_proxying_shell_in_dev_container
+
 }
 
 run_cmd_in_devserver_container() {
