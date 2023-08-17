@@ -112,7 +112,7 @@ create_tunnel() {
     container_port="$2"
 
     tunnel_label="$host_port -> $container_port"
-    tunnel_cmd="$tunnel_tag ssh -f -N -L $host_port:localhost:$container_port $SSH_ALIAS"
+    tunnel_cmd="ssh -f -N -L $host_port:localhost:$container_port $SSH_ALIAS"
 
     if ps x | grep ssh | grep "Xaa" &>/dev/null; then
         echo "Tunnel exists: $tunnel_label"
