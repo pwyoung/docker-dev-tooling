@@ -147,6 +147,10 @@ setup_proxy() {
     create_tunnels
     show_ports_open
     open_browser
+
+    # Open a shell in the container with the proxy env vars setup
+    CMD="export http_proxy=127.0.0.1:8080 && export https_proxy=127.0.0.1:8080 && bash -l"
+    docker exec -i -t $CONTAINER_NAME bash -l -c "$CMD"
 }
 
 run_cmd_in_devserver_container() {
