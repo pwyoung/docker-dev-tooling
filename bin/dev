@@ -135,11 +135,17 @@ open_browser() {
     fi
 }
 
+show_ports_open(){
+    echo "Ports open in container"
+    run_cmd_in_devserver_container "netstat -tulpn | egrep -v '^tcp6'"
+}
+
 setup_proxy() {
     ensure_server_is_running
     wait_for_ssh
     run_mitm
     create_tunnels
+    show_ports_open
     open_browser
 }
 
