@@ -4,5 +4,5 @@
 MY_DIR=$(cd "$(dirname "$0")"; pwd -P)
 
 CMD="terragrunt $@"
-$MY_DIR/dev -c "$CMD"
+$MY_DIR/../dev -c "$CMD"
 

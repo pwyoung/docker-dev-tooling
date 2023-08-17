@@ -3,6 +3,6 @@
 # Allow this to be called from anywhere.
 MY_DIR=$(cd "$(dirname "$0")"; pwd -P)
 
-CMD="az $@"
-$MY_DIR/dev -c "$CMD"
+CMD="terraform $@"
+$MY_DIR/../dev -c "$CMD"
 
