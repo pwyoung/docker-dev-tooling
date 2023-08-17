@@ -114,7 +114,7 @@ create_tunnel() {
     tunnel_label="$host_port -> $container_port"
     tunnel_cmd="ssh -f -N -L $host_port:localhost:$container_port $SSH_ALIAS"
 
-    if ps x | grep ssh | grep "Xaa" &>/dev/null; then
+    if ps x | grep ssh | grep "$host_port:localhost:$container_port" &>/dev/null; then
         echo "Tunnel exists: $tunnel_label"
     else
         echo "Running tunnel: $tunnel_label"
@@ -154,14 +154,20 @@ show_ports_open(){
 # Install the mitmproxy CA cert
 # https://docs.mitmproxy.org/stable/concepts-certificates/
 install_mitm_cert() {
-    CMD="curl --proxy 127.0.0.1:8080 --cacert ~/.mitmproxy/mitmproxy-ca-cert.pem https://example.com/"
+    if docker exec -i -t devserver bash -l -c "ls -l ~/.mitmproxy/mitmproxy-ca-cert.pem"; then
+        echo "mitmproxy cert is already installed"
+        return
+    fi
+
+    CMD="export http_proxy=127.0.0.1:8080 && export https_proxy=127.0.0.1:8080"
+    CMD="$CMD && curl --proxy 127.0.0.1:8080 --cacert ~/.mitmproxy/mitmproxy-ca-cert.pem https://example.com/"
     docker exec -i -t $CONTAINER_NAME bash -l -c "$CMD"
 }
 
 open_proxying_shell_in_dev_container() {
     # Open a shell in the container with the proxy env vars setup
-    CMD="export http_proxy=127.0.0.1:8080 && export https_proxy=127.0.0.1:8080 && bash -l"
-    #CMD="$CMD -c 'aws sts get-caller-identity'"
+    CMD="export http_proxy=127.0.0.1:8080 && export https_proxy=127.0.0.1:8080"
+    CMD="$CMD && aws sts get-caller-identity && bash -l"
     docker exec -i -t $CONTAINER_NAME bash -l -c "$CMD"
 }
 
@@ -170,9 +176,9 @@ setup_proxy() {
 
     wait_for_ssh
 
-    #run_mitm_web
-    #open_browser
-    run_mitm_dump
+    run_mitm_web
+    open_browser
+    #run_mitm_dump
 
     install_mitm_cert
 
