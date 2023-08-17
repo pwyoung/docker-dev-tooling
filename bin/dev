@@ -88,11 +88,22 @@ wait_for_ssh() {
     fi
 }
 
-run_mitm() {
+# https://nvd.codes/post/proxying-aws-through-burp/
+
+run_mitm_web() {
     # Run the proxy in the dev container (in the background)
     if ! ssh $SSH_ALIAS "ps | grep mitmweb" &>/dev/null; then
         echo "Running mitweb"
         ssh $SSH_ALIAS "nohup mitmweb &>/dev/null &"
+    fi
+}
+
+# https://www.kali.org/tools/mitmproxy/
+run_mitm_dump() {
+    # Run the proxy in the dev container (in the background)
+    if ! ssh $SSH_ALIAS "ps | grep mitmdump" &>/dev/null; then
+        echo "Running mitdump"
+        ssh $SSH_ALIAS "nohup mitmdump &> /tmp/mitmdump.out &"
     fi
 }
 
@@ -140,17 +151,36 @@ show_ports_open(){
     run_cmd_in_devserver_container "netstat -tulpn | egrep -v '^tcp6'"
 }
 
-setup_proxy() {
-    ensure_server_is_running
-    wait_for_ssh
-    run_mitm
-    create_tunnels
-    show_ports_open
-    open_browser
+# Install the mitmproxy CA cert
+# https://docs.mitmproxy.org/stable/concepts-certificates/
+install_mitm_cert() {
+    CMD="curl --proxy 127.0.0.1:8080 --cacert ~/.mitmproxy/mitmproxy-ca-cert.pem https://example.com/"
+    docker exec -i -t $CONTAINER_NAME bash -l -c "$CMD"
+}
 
+open_proxying_shell_in_dev_container() {
     # Open a shell in the container with the proxy env vars setup
     CMD="export http_proxy=127.0.0.1:8080 && export https_proxy=127.0.0.1:8080 && bash -l"
+    #CMD="$CMD -c 'aws sts get-caller-identity'"
     docker exec -i -t $CONTAINER_NAME bash -l -c "$CMD"
+}
+
+setup_proxy() {
+    ensure_server_is_running
+
+    wait_for_ssh
+
+    #run_mitm_web
+    #open_browser
+    run_mitm_dump
+
+    install_mitm_cert
+
+    create_tunnels
+
+    show_ports_open
+
+    open_proxying_shell_in_dev_container
 }
 
 run_cmd_in_devserver_container() {
