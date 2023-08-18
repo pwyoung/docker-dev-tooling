@@ -88,6 +88,7 @@ wait_for_ssh() {
     fi
 }
 
+# TODO: consider Burp-suite
 # https://nvd.codes/post/proxying-aws-through-burp/
 
 run_mitm_web() {
@@ -117,7 +118,7 @@ create_tunnel() {
     if ps x | grep ssh | grep "$host_port:localhost:$container_port" &>/dev/null; then
         echo "Tunnel exists: $tunnel_label"
     else
-        echo "Running tunnel: $tunnel_label"
+        echo "Creating tunnel: $tunnel_label"
         $tunnel_cmd
     fi
 }
@@ -132,6 +133,8 @@ kill_all_ssh_tunnels() {
 }
 
 # Set up SSH tunnels to the container
+# We could just expose ports with Docker, but this is easier to change dynamically.
+# Also, tunnels to remote systems are useful, so keep this method in the code.
 create_tunnels() {
     create_tunnel "8080" "8080"
     create_tunnel "8081" "8081"
