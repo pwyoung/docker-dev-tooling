@@ -93,7 +93,6 @@ run_mitm_web() {
 
 # Kill the SSH tunnels that we created
 kill_our_ssh_tunnels() {
-    # PIDS=$(ps eaux | grep -v grep | grep ':localhost:' | awk '{print $2}') # works/sloppy
     PIDS=$(ps eaux | grep -v grep | grep PID_ID_TAG='our-ssh-tunnel' | awk '{print $2}')
     for i in $PIDS; do
         echo "Killing pid $i"
@@ -171,7 +170,7 @@ open_proxying_shell_in_dev_container() {
     docker exec -i -t $CONTAINER_NAME bash -l -c "$CMD"
 }
 
-setup_proxy() {
+run_server_with_proxy() {
     ensure_server_is_running
 
     wait_for_ssh
@@ -180,7 +179,6 @@ setup_proxy() {
 
     install_mitm_cert
 
-    # Use Docker to forward local ports to the container
     create_tunnels
 
     open_browser
@@ -188,7 +186,6 @@ setup_proxy() {
     show_ports_open
 
     open_proxying_shell_in_dev_container
-
 }
 
 run_cmd_in_devserver_container() {
@@ -246,17 +243,28 @@ show_usage() {
     $0 [-h|--help]
     $0 [-l|--login-to-server]
     $0 [-s|--run-server]
+    $0 [-p|--run-server-with-proxy]
     $0 [-c <CMD>|--run-command-in-server <CMD>]
     $0 [-e <CMD>|--run-command-in-ephemeral-container <CMD>]
     $0 [-k|--kill-server]
-    $0 [-S|--STOP-server]
+    $0 [-T|--kill-our-ssh-tunnels]
+    $0 [-t|--create-tunnels]
 
     GOAL
       Create a dev container that can support:
       - devcontainer development, e.g. via ssh from Jetbrains or VsCode.
       - local dev/test via various CLI tools. See Dockerfiles for details.
-      - REST API debugging see setup_proxy function in this for details.
+      - REST API debugging see run_server_with_proxy function in this for details.
         This currently supports HTTP and HTTPS (e.g. AWS CLI) calls
+    DETAILS
+      - User 'dev' is a normal/non-root user that is set up to run code
+      - The host dir ~/home_dev is mapped to /home/dev in the container so that:
+        - configuration and secrets persist, but are not in version control
+        - files can be edited in the host or container
+        - files can be run in the host or container
+      - Note,
+         virtual-environments (e.g. created by venv in the container) can be
+         accessed from the host (e.g. by an IDE in the host)
 EOF
 }
 
@@ -269,6 +277,10 @@ while [[ $# -gt 0 ]]; do
   key="$1"
 
   case $key in
+    -h|--help)
+        shift
+        show_usage
+      ;;
     -l|--login-to-server)
         shift
         login_to_server
@@ -277,9 +289,9 @@ while [[ $# -gt 0 ]]; do
         shift
         ensure_server_is_running
         ;;
-    -k|--kill-server)
+    -p|--run-server-with-proxy)
         shift
-        kill_server
+        run-server-with-proxy
         ;;
     -c|--run-command-in-server)
         shift
@@ -289,13 +301,9 @@ while [[ $# -gt 0 ]]; do
         shift
         run_cmd_in_ephemeral_container "$@"
         ;;
-    -p|--setup-proxy)
+    -k|--kill-server)
         shift
-        setup_proxy
-        ;;
-    -S|--STOP-server)
-        shift
-        stop_server
+        kill_server
         ;;
     -T|--kill-our-ssh-tunnels)
         shift
@@ -305,10 +313,6 @@ while [[ $# -gt 0 ]]; do
         shift
         create_tunnels
         ;;
-    -h|--help)
-        shift
-        show_usage
-      ;;
     *)    # unknown option
       POSITIONAL+=("$1") # save it in an array for later
       shift # past argument

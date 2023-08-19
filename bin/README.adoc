@@ -4,9 +4,6 @@ Run the docker container.
 
 Map ~/home_dev to /home/dev so that files can be edited in the host or container
 
-If no args are given, log into it.
-If args are given, then run them
 
-# dev-sshd
-Does the same as 'dev' but starts an SSH server first
+
 
