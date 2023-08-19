@@ -8,13 +8,13 @@ set -e
 export set IMAGE="dev-tools:latest"
 
 # Name for the container when running
-export set CONTAINER_NAME='devserver'
+export set CONTAINER_NAME='dev'
 
 # Local SSH port to the dev container's SSH server
 export set LOCAL_SSH_PORT='2222'
 
-# ~/.ssh/config entry to support passwordless SSH to the dev server
-export set SSH_ALIAS='devserver'
+# ~/.ssh/config entry providing passwordless SSH to the container
+export set SSH_ALIAS='dev'
 
 ################################################################################
 
