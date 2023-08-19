@@ -154,9 +154,8 @@ install_mitm_cert() {
     docker exec -i -t $CONTAINER_NAME bash -l -c "$CMD"
 }
 
+# Open a shell in the container with the proxy env vars setup
 open_proxying_shell_in_dev_container() {
-    # Open a shell in the container with the proxy env vars setup
-
     # Tell CLI tools (that respect this standard) to use these env vars
     CMD="export http_proxy=127.0.0.1:8080 && export https_proxy=127.0.0.1:8080"
 
@@ -254,9 +253,10 @@ show_usage() {
 
     GOAL
       Create a dev container that can support:
-      - devcontainer development (e.g. via Jetbrains or VsCode)
-      - local dev/test (via various CLI tools. See Dockerfiles for details)
-      - AWS REST API debugging (see setup_proxy function in this for details)
+      - devcontainer development, e.g. via ssh from Jetbrains or VsCode.
+      - local dev/test via various CLI tools. See Dockerfiles for details.
+      - REST API debugging see setup_proxy function in this for details.
+        This currently supports HTTP and HTTPS (e.g. AWS CLI) calls
 EOF
 }
 
