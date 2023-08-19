@@ -291,7 +291,7 @@ while [[ $# -gt 0 ]]; do
         ;;
     -p|--run-server-with-proxy)
         shift
-        run-server-with-proxy
+        run_server_with_proxy
         ;;
     -c|--run-command-in-server)
         shift
