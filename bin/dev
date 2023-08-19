@@ -39,11 +39,6 @@ run_container() {
     # Allow connections from outside this host
     #DARGS+=" -p ${LOCAL_SSH_PORT}:22"
 
-    # Alternative to SSH tunnels (to the proxy)
-    #DARGS+=" -p 127.0.0.1:8080:8080"
-    #DARGS+=" -p 127.0.0.1:8081:8081"
-    #DARGS+=" -p 127.0.0.1:4200:4200"
-
     # Run with an interactive terminal
     #DARGS+=" -t -i"
     # OR,
