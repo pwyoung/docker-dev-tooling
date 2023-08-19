@@ -83,23 +83,11 @@ wait_for_ssh() {
     fi
 }
 
-# TODO: consider Burp-suite
-# https://nvd.codes/post/proxying-aws-through-burp/
-
 run_mitm_web() {
     # Run the proxy in the dev container (in the background)
     if ! ssh $SSH_ALIAS "ps | grep mitmweb" &>/dev/null; then
         echo "Running mitweb"
         ssh $SSH_ALIAS "nohup mitmweb &>/dev/null &"
-    fi
-}
-
-# https://www.kali.org/tools/mitmproxy/
-run_mitm_dump() {
-    # Run the proxy in the dev container (in the background)
-    if ! ssh $SSH_ALIAS "ps | grep mitmdump" &>/dev/null; then
-        echo "Running mitdump"
-        ssh $SSH_ALIAS "nohup mitmdump &> /tmp/mitmdump.out &"
     fi
 }
 
@@ -189,8 +177,7 @@ setup_proxy() {
 
     wait_for_ssh
 
-    #run_mitm_web
-    run_mitm_dump
+    run_mitm_web
 
     install_mitm_cert
 
@@ -246,7 +233,7 @@ kill_server() {
     docker kill $CONTAINER_NAME &>/dev/null || true
 }
 
-login() {
+login_to_server() {
     ensure_server_is_running
 
     # These all work
@@ -258,12 +245,18 @@ login() {
 show_usage() {
     cat <<EOF
     $0 [-h|--help]
-    $0 [-l|--login]
+    $0 [-l|--login-to-server]
     $0 [-s|--run-server]
     $0 [-c <CMD>|--run-command-in-server <CMD>]
     $0 [-e <CMD>|--run-command-in-ephemeral-container <CMD>]
     $0 [-k|--kill-server]
     $0 [-S|--STOP-server]
+
+    GOAL
+      Create a dev container that can support:
+      - devcontainer development (e.g. via Jetbrains or VsCode)
+      - local dev/test (via various CLI tools. See Dockerfiles for details)
+      - AWS REST API debugging (see setup_proxy function in this for details)
 EOF
 }
 
@@ -276,9 +269,9 @@ while [[ $# -gt 0 ]]; do
   key="$1"
 
   case $key in
-    -l|--login)
+    -l|--login-to-server)
         shift
-        login
+        login_to_server
         ;;
     -s|--run-server)
         shift
