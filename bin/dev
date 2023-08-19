@@ -113,32 +113,32 @@ create_tunnel() {
     container_port="$2"
 
     tunnel_label="$host_port -> $container_port"
-    tunnel_cmd="ssh -f -N -L $host_port:localhost:$container_port $SSH_ALIAS"
 
     if ps x | grep ssh | grep "$host_port:localhost:$container_port" &>/dev/null; then
         echo "Tunnel exists: $tunnel_label"
     else
         echo "Creating tunnel: $tunnel_label"
-        $tunnel_cmd
+        export DEVTAG='our-ssh-tunnel' && ssh -f -N -L $host_port:localhost:$container_port $SSH_ALIAS
     fi
 }
 
-# Kill all SSH tunnels (that look like the ones we created)
-kill_all_ssh_tunnels() {
-    PIDS=$(ps eaux | grep -v grep | grep 'ssh -f -N -L' | awk '{print $2}')
-    for i in $PIDS; do
-        echo "Killing pid $i"
-        kill -15 $i
-    done
-}
-
 # Set up SSH tunnels to the container
-# We could just expose ports with Docker, but this is easier to change dynamically.
-# Also, tunnels to remote systems are useful, so keep this method in the code.
+# We could just expose ports with Docker.
+# Keep this code in case we want to manually manage tunnels
 create_tunnels() {
     create_tunnel "8080" "8080"
     create_tunnel "8081" "8081"
     create_tunnel "4200" "4200"
+}
+
+# Kill all SSH tunnels (that look like the ones we created)
+kill_all_ssh_tunnels() {
+    PIDS=$(ps eaux | grep -v grep | grep DEVTAG='our-ssh-tunnel' | awk '{print $2}')
+    #PIDS=$(ps eaux | grep -v grep | grep 'ssh -f -N -L' | awk '{print $2}') # Can catch other SSH tunnels
+    for i in $PIDS; do
+        echo "Killing pid $i"
+        kill -15 $i
+    done
 }
 
 open_browser() {
@@ -199,6 +199,7 @@ setup_proxy() {
 
     install_mitm_cert
 
+    # Use Docker to forward local ports to the container
     create_tunnels
 
     open_browser
@@ -306,9 +307,13 @@ while [[ $# -gt 0 ]]; do
         shift
         stop_server
         ;;
-    -K|--KILL-all-ssh-tunnels)
+    -T|--kill-all-ssh-tunnels)
         shift
         kill_all_ssh_tunnels
+        ;;
+    -t|--create-tunnels)
+        shift
+        create_tunnels
         ;;
     -h|--help)
         shift
