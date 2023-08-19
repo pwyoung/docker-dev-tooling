@@ -103,6 +103,16 @@ run_mitm_dump() {
     fi
 }
 
+# Kill the SSH tunnels that we created
+kill_our_ssh_tunnels() {
+    # PIDS=$(ps eaux | grep -v grep | grep ':localhost:' | awk '{print $2}') # works/sloppy
+    PIDS=$(ps eaux | grep -v grep | grep PID_ID_TAG='our-ssh-tunnel' | awk '{print $2}')
+    for i in $PIDS; do
+        echo "Killing pid $i"
+        kill -15 $i
+    done
+}
+
 create_tunnel() {
     host_port="$1"
     container_port="$2"
@@ -113,7 +123,7 @@ create_tunnel() {
         echo "Tunnel exists: $tunnel_label"
     else
         echo "Creating tunnel: $tunnel_label"
-        export DEVTAG='our-ssh-tunnel' && ssh -f -N -L $host_port:localhost:$container_port $SSH_ALIAS
+        export PID_ID_TAG='our-ssh-tunnel' && ssh -f -N -L $host_port:localhost:$container_port $SSH_ALIAS
     fi
 }
 
@@ -124,16 +134,6 @@ create_tunnels() {
     create_tunnel "8080" "8080"
     create_tunnel "8081" "8081"
     create_tunnel "4200" "4200"
-}
-
-# Kill all SSH tunnels (that look like the ones we created)
-kill_all_ssh_tunnels() {
-    PIDS=$(ps eaux | grep -v grep | grep DEVTAG='our-ssh-tunnel' | awk '{print $2}')
-    #PIDS=$(ps eaux | grep -v grep | grep 'ssh -f -N -L' | awk '{print $2}') # Can catch other SSH tunnels
-    for i in $PIDS; do
-        echo "Killing pid $i"
-        kill -15 $i
-    done
 }
 
 open_browser() {
@@ -189,8 +189,8 @@ setup_proxy() {
 
     wait_for_ssh
 
-    run_mitm_web
-    #run_mitm_dump
+    #run_mitm_web
+    run_mitm_dump
 
     install_mitm_cert
 
@@ -241,6 +241,8 @@ run_cmd_in_ephemeral_container() {
 }
 
 kill_server() {
+    kill_our_ssh_tunnels
+
     docker kill $CONTAINER_NAME &>/dev/null || true
 }
 
@@ -302,9 +304,9 @@ while [[ $# -gt 0 ]]; do
         shift
         stop_server
         ;;
-    -T|--kill-all-ssh-tunnels)
+    -T|--kill-our-ssh-tunnels)
         shift
-        kill_all_ssh_tunnels
+        kill_our_ssh_tunnels
         ;;
     -t|--create-tunnels)
         shift
