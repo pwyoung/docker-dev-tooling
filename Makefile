@@ -1,35 +1,74 @@
-.PHONY:=default base-dev python-dev infra-dev aws-dev azure-dev node-dev dev-tools
+.PHONY:=all clean build test review-image post-image-setup setup-aws
 
-# This is the final product that we care about.
+# Directory containing this makefile. Includes trailing /
+MAKEFILE_PATH=$(dir $(realpath $(firstword $(MAKEFILE_LIST))))
+
+SHELL:=/bin/bash
+
+DOCKER_TAG:=latest
+DOCKER_IMAGE:=dev-tools:$(DOCKER_TAG)
+
+# "docker build" args
 #
-# We could use stages and copy binaries, but this is easy to manage.
-# It allows going into any dir easily and just running "make"
-# to update that layer.
+# Assign the image name (repo:tag)
+BARGS:=-t $(DOCKER_IMAGE)
+# Force (re)build to occur
+#BARGS:=$(BARGS) --no-cache
 #
-# Or, just run "make here to build it all, using the cache
-# to skip layers that didn't change.
-default: dev-tools
+# Match the USERID so to avoid complants,
+# e.g. that ~/.ssh/config has the wrong owner
+HOST_UID:=$(shell id -u)
+BARGS:=$(BARGS) --build-arg DEVUID=$(HOST_UID)
 
-base-dev:
-	cd ./docker-images/base-dev && make
 
-python-dev: base-dev
-	cd ./docker-images/python-dev && make
+# "docker run" args
+#
+# Interactive TTY
+RARGS:=-t -i
+# Remove container when it stops running
+RARGS:=$(RARGS) --rm
 
-infra-dev: python-dev
-	cd ./docker-images/infra-dev && make
+# Test command
+#TC:=aws --version
+TC:=whoami
+TC:=$(TC) && az --version | grep azure-cli
+TC:=$(TC) && terraform --version
+TC:=$(TC) && terragrunt --version
+#TC:=$(TC) && sudo su - nodedev -c 'node --version'
+#TC:=$(TC) && sudo su - nodedev -c 'npm --version'
+TC:=$(TC) && dotnet --info | head -3
+#TC:=$(TC) && mitmproxy --version
 
-aws-dev: infra-dev
-	cd ./docker-images/aws-dev && make
+all: post-image-setup
 
-azure-dev: aws-dev
-	cd ./docker-images/azure-dev && make
+clean:
+	$(info Clean)
+	docker rmi $(DOCKER_IMAGE) || true
 
-node-dev: azure-dev
-	cd ./docker-images/node-dev && make
+build:
+	$(info Build Docker Image)
+	DOCKER_BUILDKIT=1 docker build $(BARGS) .
 
-dotnet-dev: node-dev
-	cd ./docker-images/dotnet-dev && make
+# Test the image
+test: build
+	$(info Running test scripts)
+	docker run $(RARGS) $(DOCKER_IMAGE) bash -c "$(TC)"
 
-dev-tools: dotnet-dev
-	cd ./docker-images/dev-tools && make
+setup-aws: test
+	$(MAKEFILE_PATH)/bin/dev -s
+	docker cp $(MAKEFILE_PATH)post-image-setup/aws-dev/Makefile dev:/tmp/
+	docker cp $(MAKEFILE_PATH)post-image-setup/aws-dev/run dev:/tmp/
+	docker cp $(MAKEFILE_PATH)post-image-setup/aws-dev/test-bedrock-via-boto.py dev:/tmp/
+	$(MAKEFILE_PATH)/bin/dev -c "cd /tmp && make"
+
+post-image-setup: | setup-aws
+
+login: build
+        $(info Logging into container)
+        docker run $(RARGS) $(DOCKER_IMAGE) bash -l
+
+review-image:
+	echo "Review Docker Image"
+	docker inspect $(DOCKER_IMAGE)
+	docker history $(DOCKER_IMAGE)
+	docker images | head -2
