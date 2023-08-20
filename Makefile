@@ -1,4 +1,4 @@
-.PHONY:=all build clean docker-image test-image test login review-image run-container setup-aws setup-node
+.PHONY:=all build clean docker-image test-image test login review-image run-container setup-aws setup-node test-only
 
 # Directory containing this makefile. Includes trailing /
 MAKEFILE_PATH=$(dir $(realpath $(firstword $(MAKEFILE_LIST))))
@@ -35,10 +35,13 @@ TC:=$(TC) && terragrunt --version
 TC:=$(TC) && dotnet --info | head -3
 
 # Test the final container
-TC2:=$(TC) && aws --version
+TC2:=whoami
+TC2:=$(TC2) && . ~/virtual-environments/bedrock/venv/bin/activate && aws --version
+TC2:=$(TC2) && mitmproxy --version
 TC2:=$(TC2) && node --version
 TC2:=$(TC2) && npm --version
-#TC2:=$(TC2) && mitmproxy --version
+TC2:=$(TC2) && yes | tr 'y' "\n" | ng version
+TC2:=$(TC)
 
 all: test
 
@@ -79,3 +82,6 @@ review-image:
 	docker inspect $(DOCKER_IMAGE)
 	docker history $(DOCKER_IMAGE)
 	docker images | head -2
+
+test-only:
+	$(MAKEFILE_PATH)/bin/dev -c "$(TC2)"
