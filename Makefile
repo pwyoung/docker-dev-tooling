@@ -1,4 +1,4 @@
-.PHONY:=all clean build test review-image post-image-setup setup-aws
+.PHONY:=all build clean docker-image test-image test login review-image run-container setup-aws setup-node
 
 # Directory containing this makefile. Includes trailing /
 MAKEFILE_PATH=$(dir $(realpath $(firstword $(MAKEFILE_LIST))))
@@ -20,7 +20,6 @@ BARGS:=-t $(DOCKER_IMAGE)
 HOST_UID:=$(shell id -u)
 BARGS:=$(BARGS) --build-arg DEVUID=$(HOST_UID)
 
-
 # "docker run" args
 #
 # Interactive TTY
@@ -28,40 +27,48 @@ RARGS:=-t -i
 # Remove container when it stops running
 RARGS:=$(RARGS) --rm
 
-# Test command
-#TC:=aws --version
+# Test the image
 TC:=whoami
 TC:=$(TC) && az --version | grep azure-cli
 TC:=$(TC) && terraform --version
 TC:=$(TC) && terragrunt --version
-#TC:=$(TC) && sudo su - nodedev -c 'node --version'
-#TC:=$(TC) && sudo su - nodedev -c 'npm --version'
 TC:=$(TC) && dotnet --info | head -3
-#TC:=$(TC) && mitmproxy --version
 
-all: post-image-setup
+# Test the final container
+TC2:=$(TC) && aws --version
+TC2:=$(TC2) && node --version
+TC2:=$(TC2) && npm --version
+#TC2:=$(TC2) && mitmproxy --version
+
+all: test
 
 clean:
 	$(info Clean)
 	docker rmi $(DOCKER_IMAGE) || true
 
-build:
+docker-image:
 	$(info Build Docker Image)
 	DOCKER_BUILDKIT=1 docker build $(BARGS) .
 
-# Test the image
-test: build
+test-image: docker-image
 	$(info Running test scripts)
 	docker run $(RARGS) $(DOCKER_IMAGE) bash -c "$(TC)"
 
-setup-aws: test
+run-container: test-image
 	$(MAKEFILE_PATH)/bin/dev -s
+
+setup-aws: run-container
 	docker cp $(MAKEFILE_PATH)post-image-setup/aws-dev/Makefile dev:/tmp/
 	docker cp $(MAKEFILE_PATH)post-image-setup/aws-dev/run dev:/tmp/
 	docker cp $(MAKEFILE_PATH)post-image-setup/aws-dev/test-bedrock-via-boto.py dev:/tmp/
 	$(MAKEFILE_PATH)/bin/dev -c "cd /tmp && make"
 
-post-image-setup: | setup-aws
+setup-node: run-container
+	docker cp $(MAKEFILE_PATH)post-image-setup/node-dev/setup-node.sh dev:/tmp/
+	$(MAKEFILE_PATH)/bin/dev -c "bash -x /tmp/setup-node.sh"
+
+test: | setup-aws setup-node
+	$(MAKEFILE_PATH)/bin/dev -c "$(TC2)"
 
 login: build
         $(info Logging into container)

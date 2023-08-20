@@ -8,9 +8,7 @@
 # Directory containing this makefile. Includes trailing /
 MAKEFILE_PATH=$(dir $(realpath $(firstword $(MAKEFILE_LIST))))
 
-.PHONY:=default FORCE all
-.PHONY:=clean clean-all
-.PHONY:=$(PHONY) build test
+.PHONY:=default FORCE all clean clean-all build test
 
 VENV:=$(HOME)/virtual-environments/bedrock
 RUN:=. $(VENV)/venv/bin/activate && $(MAKEFILE_PATH)/run
