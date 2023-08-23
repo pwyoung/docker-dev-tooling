@@ -32,12 +32,13 @@ Example
 - chmod 0700 ~/home_dev/.ssh
 - chmod 0600 ~/home_dev/.ssh/authorized_keys
 - Example SSH config
-  # ~/home_dev/.ssh/config
+```
+# ~/home_dev/.ssh/config
 Host dev
 	HostName 127.0.0.1
 	User dev
 	Port 2222
-
+```
 I recommend:
 - For git
   - Putting repos under ~/home_dev/git
