@@ -33,7 +33,7 @@ Example
 - chmod 0600 ~/home_dev/.ssh/authorized_keys
 - Example SSH config
 ```
-# ~/home_dev/.ssh/config
+# ~/.ssh/config
 Host dev
 	HostName 127.0.0.1
 	User dev
