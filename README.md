@@ -11,7 +11,6 @@ Create a docker image for running things such as:
 
 - ./bin
   Contains commands that can be used to run the container.
-  See ./bin/README.adoc or the individual scripts for details.
 
 - ./tools/mfa-with-aws-cli
   This contains code to produce temporary (self-expiring) credentials based on the
