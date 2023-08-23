@@ -24,9 +24,6 @@ run_container() {
     # Map ~/home_dev to /home/dev so that files can be edited in the host or container
     #
     # Start the SSH server.
-    #
-    # If no args are given, log into it.
-    # If args are given, then run them
 
     # Docker run args
     DARGS=""
