@@ -162,7 +162,7 @@ open_proxying_shell_in_dev_container() {
     CMD="$CMD && export AWS_CA_BUNDLE=~/.mitmproxy/mitmproxy-ca-cert.pem"
 
     # Make a test AWS CLI call
-    CMD="$CMD && aws sts get-caller-identity"
+    #CMD="$CMD && aws sts get-caller-identity"
 
     # Open a login shell
     CMD="$CMD && bash -l"
