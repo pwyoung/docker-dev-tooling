@@ -5,15 +5,13 @@ Create a docker image for running things such as:
 - Terraform
 - Terragrunt
 - OpenSSH Server
+- Mitmproxy
 
 # Directories
 
-- ./docker-images/python-dev
-  This creates a docker image based on Ubuntu, configured for Python3 development.
-  This is the basis for the dev-tools image
-
-- ./docker-images/dev-tools
-  This creates a docker image which can be used to run the additional tools beyond Python
+- ./bin
+  Contains commands that can be used to run the container.
+  See ./bin/README.adoc or the individual scripts for details.
 
 - ./tools/mfa-with-aws-cli
   This contains code to produce temporary (self-expiring) credentials based on the
@@ -21,6 +19,30 @@ Create a docker image for running things such as:
   There is also a script showing how to decrypt a symmetrically encrypted version
   of the credentials file produced.
 
-- ./bin
-  Contains commands that can be used to run the container.
-  See ./bin/README.adoc or the individual scripts for details.
+# Setup
+
+Required:
+- Set up ~/home_dev and support passwordless SSH for the dev
+  user whose home dir in the contianer, /home/dev,
+  will bind to ~/home_dev in the host.
+
+Example
+- mkdir -p ~/home_dev/.ssh
+- cat ~/.ssh/id_rsa.pub >> ~/home_dev/.ssh/authorized_keys
+- chmod 0700 ~/home_dev/.ssh
+- chmod 0600 ~/home_dev/.ssh/authorized_keys
+- Example SSH config
+  # ~/home_dev/.ssh/config
+Host dev
+	HostName 127.0.0.1
+	User dev
+	Port 2222
+
+I recommend:
+- For git
+  - Putting repos under ~/home_dev/git
+  - Sym-Linking to ~/home_dev/git from ~/git
+- Adding the bin dir of this repo to $PATH
+
+
+
