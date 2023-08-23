@@ -139,7 +139,7 @@ show_ports_open(){
 # Install the mitmproxy CA cert
 # https://docs.mitmproxy.org/stable/concepts-certificates/
 install_mitm_cert() {
-    if docker exec -i -t devserver bash -l -c "ls -l ~/.mitmproxy/mitmproxy-ca-cert.pem"; then
+    if docker exec -i -t dev bash -l -c "ls -l ~/.mitmproxy/mitmproxy-ca-cert.pem"; then
         echo "mitmproxy cert is already installed"
         return
     fi
