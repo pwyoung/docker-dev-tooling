@@ -10,7 +10,8 @@ Create a docker image for running things such as:
 # Directories
 
 - ./bin
-  Contains commands that can be used to run the container.
+  Contains the command, "dev", which runs the container.
+  Run this by itself to see the various options it supports (e.g. proxy).
 
 - ./tools/mfa-with-aws-cli
   This contains code to produce temporary (self-expiring) credentials based on the
