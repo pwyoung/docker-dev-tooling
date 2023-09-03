@@ -75,15 +75,24 @@ build() {
 }
 
 
-test_all() {
-    aws --version
-    aws sts get-caller-identity
-
+setup_bedrock() {
     # The python script MUST be in the repo dir,
     # because the Python script adds the repo dir as a module (for 'utils' etc)
     cp "$MY_DIR/test-bedrock-via-boto.py" "$REPO_DIR"
     cd "$REPO_DIR"
     python3 ./test-bedrock-via-boto.py || echo "Setup AWS credentials"
+}
+
+test_all() {
+    aws --version
+
+    if aws sts get-caller-identity; then
+	setup_bedrock
+    else
+	echo "********************************************************************************"
+	echo "You probably need to set up AWS credentials, in ~/home_dev/.aws/credentials"
+	echo "********************************************************************************"
+    fi
 }
 
 
