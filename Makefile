@@ -18,6 +18,11 @@ BARGS:=-t $(DOCKER_IMAGE)
 # Match the USERID so to avoid complants,
 # e.g. that ~/.ssh/config has the wrong owner
 HOST_UID:=$(shell id -u)
+#
+# For podman,
+# BUILDAH_FORMAT=docker
+#BARGS:=$(BARGS) --format=docker
+#
 BARGS:=$(BARGS) --build-arg DEVUID=$(HOST_UID)
 
 # "docker run" args
@@ -51,7 +56,7 @@ clean:
 
 docker-image:
 	$(info Build Docker Image)
-	DOCKER_BUILDKIT=1 docker build $(BARGS) .
+	BUILDAH_FORMAT=docker DOCKER_BUILDKIT=1 docker build $(BARGS) .
 
 test-image: docker-image
 	$(info Running test scripts)

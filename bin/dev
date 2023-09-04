@@ -54,6 +54,16 @@ run_container() {
     # Set a name for the container
     DARGS+=" --name $CONTAINER_NAME"
 
+    # Deal with a podman issue:
+    # ~/home_dev->~dev bind mount being owned by root in the container
+    #
+    # https://github.com/containers/podman/issues/2898
+    #DARGS+=" --uidmap 1000:0:1 --uidmap 0:1:1000"
+    # This did not deal with the 1001 gid
+    #
+    DARGS+=" --userns=keep-id"
+
+
     # Start SSH server, run a sleep command forever, and return immediately
     CMD="sudo service ssh start && service ssh status && nohup sleep infinity"
     docker run $DARGS $IMAGE bash -c "$CMD"
