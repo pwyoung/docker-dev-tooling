@@ -145,6 +145,13 @@ RUN cd /tmp/mitm && \
     mv /tmp/mitm/mitm* /usr/local/bin
 
 ################################################################################
+# Speed testing
+################################################################################
+RUN curl -s https://packagecloud.io/install/repositories/ookla/speedtest-cli/script.deb.sh | sudo bash \
+    && sudo apt update \
+    && sudo apt-get install speedtest
+
+################################################################################
 # CLEANUP
 ################################################################################
 
