@@ -62,13 +62,19 @@ run_container() {
     # This did not deal with the 1001 gid
     #
     if docker --version | grep -i podman &>/dev/null; then
+        # This fails with Docker-CE
         DARGS+=" --userns=keep-id"
     fi
 
-    # Access GPU
+    # Access GPU (if nvidia runtime is set up)
     # https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/user-guide.html
     # For this: https://github.com/NVIDIA/nvidia-container-toolkit
-    DARGS+=" --gpus all"
+    if docker info | grep Runtime | grep nvidia &>/dev/null; then
+        DARGS+=" --gpus all"
+        #DARGS+=" --ipc=host --ulimit memlock=-1 --ulimit stack=67108864" # 64 MB
+        #DARGS+=" --ipc=host --ulimit memlock=-1 --ulimit stack=2147483648" # 2 GB
+        DARGS+=" --ipc=host --ulimit memlock=-1 --ulimit stack=4294967296" # 4 GB
+    fi
 
     # Start SSH server, run a sleep command forever, and return immediately
     CMD="sudo service ssh start && service ssh status && nohup sleep infinity"
