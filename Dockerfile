@@ -1,6 +1,12 @@
-FROM ubuntu:22.04
+#FROM ubuntu:22.04
 #FROM ubuntu:latest # 22.04 now
 #FROM ubuntu:23.04 # Many packages are not supported yet.
+
+# Use Nvidia Pytorch Container since it has so much configured for AI/ML work.
+FROM nvcr.io/nvidia/pytorch:23.08-py3
+# https://docs.nvidia.com/deeplearning/frameworks/support-matrix/index.html
+# Confirmed: OS base is Ubuntu 22.04.2 via:
+#   docker run --gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 -it --rm nvcr.io/nvidia/pytorch:23.08-py3 bash -c 'cat /etc/os-release' | grep VERSION
 
 ARG TZ=UTC
 ARG DEBIAN_FRONTEND=noninteractive
