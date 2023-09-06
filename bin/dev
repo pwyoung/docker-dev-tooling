@@ -137,7 +137,8 @@ create_tunnel() {
 # Set up SSH tunnels to the container
 # We could just expose ports with Docker.
 # Keep this code in case we want to manually manage tunnels
-create_tunnels() {
+create_proxy_tunnels() {
+    # MITMPROXY
     create_tunnel "8080" "8080"
     create_tunnel "8081" "8081"
     create_tunnel "4200" "4200"
@@ -201,7 +202,7 @@ run_server_with_proxy() {
 
     install_mitm_cert
 
-    create_tunnels
+    create_proxy_tunnels
 
     open_browser
 
@@ -260,12 +261,33 @@ login_to_server() {
     ssh $SSH_ALIAS
 }
 
+run_jupyter() {
+    ensure_server_is_running
+
+    # JUPYTER defaults to 8888
+    create_tunnel "8888" "8888"
+
+    # Run a project to run a Jupyter server
+    CMD='cd ~/git/nemo-work/tests/pytorch-setup && make'
+    ssh $SSH_ALIAS "$CMD"
+}
+
+kill_jupyter() {
+    ensure_server_is_running
+
+    # Run a project to kill a Jupyter server
+    CMD='cd ~/git/nemo-work/tests/pytorch-setup && make clean'
+    ssh $SSH_ALIAS "$CMD"
+}
+
 show_usage() {
     cat <<EOF
     $0 [-h|--help]
     $0 [-l|--login-to-server]
     $0 [-s|--run-server]
     $0 [-p|--run-server-with-proxy]
+    $0 [-j|--run-jupyter]
+    $0 [-J|--kill-jupyter]
     $0 [-c <CMD>|--run-command-in-server <CMD>]
     $0 [-e <CMD>|--run-command-in-ephemeral-container <CMD>]
     $0 [-k|--kill-server]
@@ -313,6 +335,14 @@ while [[ $# -gt 0 ]]; do
     -p|--run-server-with-proxy)
         shift
         run_server_with_proxy
+        ;;
+    -j|--run-jupyter)
+        shift
+        run_jupyter
+        ;;
+    -J|--kill-jupyter)
+        shift
+        kill_jupyter
         ;;
     -c|--run-command-in-server)
         shift

@@ -151,6 +151,8 @@ RUN curl -s https://packagecloud.io/install/repositories/ookla/speedtest-cli/scr
     && sudo apt update \
     && sudo apt-get install speedtest
 
+RUN sudo apt-get install -y lsof
+
 ################################################################################
 # CLEANUP
 ################################################################################
