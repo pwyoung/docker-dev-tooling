@@ -48,5 +48,4 @@ I recommend:
 
 Optional:
 - Configure the machine for Nvidia Container Toolkit
-
--- Example: https://github.com/pwyoung/computer-setup/blob/master/home/bin/setup-popos-computer.sh
+  - Example: https://github.com/pwyoung/computer-setup/blob/master/home/bin/setup-popos-computer.sh
