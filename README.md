@@ -46,4 +46,6 @@ I recommend:
 - Adding the bin dir of this repo to $PATH
 
 
-
+Optional:
+- Configure the machine for Nvidia Container Toolkit
+  Example: https://github.com/pwyoung/computer-setup/blob/master/home/bin/setup-popos-computer.sh
