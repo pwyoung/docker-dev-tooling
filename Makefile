@@ -46,6 +46,7 @@ TC2:=$(TC2) && mitmproxy --version
 TC2:=$(TC2) && node --version
 TC2:=$(TC2) && npm --version
 TC2:=$(TC2) && yes | tr 'y' "\n" | ng version
+TC2:=$(TC2) && ~/nvidia/ngc-cli/ngc --version
 TC2:=$(TC)
 
 all: test
@@ -65,6 +66,11 @@ test-image: docker-image
 run-container: test-image
 	$(MAKEFILE_PATH)/bin/dev -s
 
+################################################################################
+# post-container creation setup
+#   This is for files that must live in ~dev (i.e. ~/home_dev)
+################################################################################
+
 setup-aws: run-container
 	docker cp $(MAKEFILE_PATH)post-image-setup/aws-dev/Makefile dev:/tmp/
 	docker cp $(MAKEFILE_PATH)post-image-setup/aws-dev/run dev:/tmp/
@@ -75,10 +81,18 @@ setup-node: run-container
 	docker cp $(MAKEFILE_PATH)post-image-setup/node-dev/setup-node.sh dev:/tmp/
 	$(MAKEFILE_PATH)/bin/dev -c "bash -x /tmp/setup-node.sh"
 
-test: | setup-aws setup-node
+setup-nvidia: run-container
+	docker cp $(MAKEFILE_PATH)post-image-setup/nvidia-dev/setup-nvidia.sh dev:/home/dev/
+	$(MAKEFILE_PATH)/bin/dev -c "bash -x /home/dev/setup-nvidia.sh"
+
+test: | setup-aws setup-node setup-nvidia
 	$(MAKEFILE_PATH)/bin/dev -c "$(TC2)"
 
-login: build
+################################################################################
+# Manually invoked make targets (for dev/test)
+################################################################################
+
+login:
         $(info Logging into container)
         docker run $(RARGS) $(DOCKER_IMAGE) bash -l
 
