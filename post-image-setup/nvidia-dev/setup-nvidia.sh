@@ -32,3 +32,5 @@ fi
 #   ngc config set
 # Check access
 #   ngc config current
+# Docs
+#   https://docs.ngc.nvidia.com/cli/index.html
