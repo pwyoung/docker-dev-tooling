@@ -26,3 +26,9 @@ if [ ! -e ngc-cli/ngc ]; then
 fi
 
 ~/nvidia/ngc-cli/ngc --version
+
+# Generate API token
+#   https://ngc.nvidia.com/setup
+#   ngc config set
+# Check access
+#   ngc config current
