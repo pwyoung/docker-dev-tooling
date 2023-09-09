@@ -34,3 +34,11 @@ fi
 #   ngc config current
 # Docs
 #   https://docs.ngc.nvidia.com/cli/index.html
+# TODO/TEST:
+#   ngc org subscription --org ny9dz9ua1hz5 info
+
+
+# Triton Server
+# https://catalog.ngc.nvidia.com/orgs/nvidia/containers/tritonserver
+#   docker pull nvcr.io/nvidia/tritonserver:23.08-py3
+#   docker pull nvcr.io/nvidia/tritonserver:23.08-py3-sdk # Has client libs and model analyzer
