@@ -34,8 +34,20 @@ fi
 #   ngc config current
 # Docs
 #   https://docs.ngc.nvidia.com/cli/index.html
+#   https://docs.nvidia.com/base-command-platform/user-guide/index.html#terms-and-concepts
 # TODO/TEST:
-#   ngc org subscription --org ny9dz9ua1hz5 info
+#   Fails:
+#     Most commmands...
+#       ngc org subscription --org ny9dz9ua1hz5 info
+#       ngc registry csp info
+#       ngc ace list # ACE is a cluster or availability zone.
+#   Succeeds:
+#     https://docs.ngc.nvidia.com/cli/cmd_registry.html
+#       ngc registry image list
+#       ngc registry chart list
+#       ngc registry collection list
+#       ngc registry model list
+#       ngc registry resource list
 
 
 # Triton Server
