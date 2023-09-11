@@ -1,9 +1,5 @@
 #FROM ubuntu:22.04
-
-# Use Nvidia Pytorch Container since it has so much configured for AI/ML work.
-#
-# Default
-# ARG DOCKER_BASE_IMAGE=nvcr.io/nvidia/pytorch:23.08-py3
+ARG DOCKER_BASE_IMAGE=nvcr.io/nvidia/pytorch:23.08-py3
 FROM $DOCKER_BASE_IMAGE
 
 # https://docs.nvidia.com/deeplearning/frameworks/support-matrix/index.html
