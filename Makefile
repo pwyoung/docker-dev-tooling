@@ -38,6 +38,7 @@ TC:=$(TC) && az --version | grep azure-cli
 TC:=$(TC) && terraform --version
 TC:=$(TC) && terragrunt --version
 TC:=$(TC) && dotnet --info | head -3
+TC:=$(TC) && kubectl version --client
 
 # Test the final container
 TC2:=whoami
@@ -51,7 +52,9 @@ TC2:=$(TC)
 
 all: test
 
-clean:
+FORCE:
+
+clean: FORCE
 	$(info Clean)
 	docker rmi $(DOCKER_IMAGE) || true
 
@@ -88,19 +91,21 @@ setup-nvidia: run-container
 test: | setup-aws setup-node setup-nvidia
 	$(MAKEFILE_PATH)/bin/dev -c "$(TC2)"
 
+
 ################################################################################
 # Manually invoked make targets (for dev/test)
 ################################################################################
 
-login:
-        $(info Logging into container)
-        docker run $(RARGS) $(DOCKER_IMAGE) bash -l
-
-review-image:
+review-image: FORCE
 	echo "Review Docker Image"
 	docker inspect $(DOCKER_IMAGE)
 	docker history $(DOCKER_IMAGE)
 	docker images | head -2
 
-test-only:
+login: FORCE
+	$(info Logging into container)
+	docker run $(RARGS) $(DOCKER_IMAGE) bash -l
+
+test-only: FORCE
+	$(MAKEFILE_PATH)/bin/dev -c "$(TC)"
 	$(MAKEFILE_PATH)/bin/dev -c "$(TC2)"
