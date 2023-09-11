@@ -8,6 +8,8 @@ SHELL:=/bin/bash
 DOCKER_TAG:=latest
 DOCKER_IMAGE:=dev-tools:$(DOCKER_TAG)
 
+DOCKER_BASE_IMAGE:=nvcr.io/nvidia/pytorch:23.08-py3
+
 # "docker build" args
 #
 # Assign the image name (repo:tag)
@@ -24,6 +26,7 @@ HOST_UID:=$(shell id -u)
 #BARGS:=$(BARGS) --format=docker
 #
 BARGS:=$(BARGS) --build-arg DEVUID=$(HOST_UID)
+BARGS:=$(BARGS) --build-arg DOCKER_BASE_IMAGE=$(DOCKER_BASE_IMAGE)
 
 # "docker run" args
 #
@@ -58,7 +61,11 @@ clean: FORCE
 	$(info Clean)
 	docker rmi $(DOCKER_IMAGE) || true
 
-docker-image:
+# Speed up rebuilds
+get-base-image: FORCE
+	docker pull $(DOCKER_BASE_IMAGE)
+
+docker-image: get-base-image
 	$(info Build Docker Image)
 	BUILDAH_FORMAT=docker DOCKER_BUILDKIT=1 docker build $(BARGS) .
 
