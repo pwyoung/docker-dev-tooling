@@ -31,10 +31,10 @@ run_container() {
     # Map the SSH server port
     #
     # Only allow local connections
-    DARGS+=" -p 127.0.0.1:${LOCAL_SSH_PORT}:22/tcp"
+    #DARGS+=" -p 127.0.0.1:${LOCAL_SSH_PORT}:22/tcp"
     #
     # Allow connections from outside this host
-    #DARGS+=" -p ${LOCAL_SSH_PORT}:22"
+    DARGS+=" -p ${LOCAL_SSH_PORT}:22"
 
     # Run with an interactive terminal
     #DARGS+=" -t -i"
@@ -78,6 +78,7 @@ run_container() {
 
     # Start SSH server, run a sleep command forever, and return immediately
     CMD="sudo service ssh start && service ssh status && nohup sleep infinity"
+    echo "COMMAND:    docker run $DARGS $IMAGE bash -c \"$CMD\"" > /tmp/dev.cmd.out
     docker run $DARGS $IMAGE bash -c "$CMD"
 }
 
