@@ -167,6 +167,11 @@ RUN sudo apt-get update && \
   sudo apt-get update && \
   sudo apt-get install -y kubectl kubeadm kubecolor kubetail
 
+################################################################################
+# NVIDIA:NEMO
+################################################################################
+
+RUN sudo apt-get update && sudo apt-get install -y libsndfile1 ffmpeg
 
 ################################################################################
 # CLEANUP
