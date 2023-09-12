@@ -1,0 +1,138 @@
+#!/usr/bin/env bash
+
+set -e
+
+# Automate setup of Nemo. See:
+# - https://github.com/NVIDIA/NeMo
+# - https://github.com/NVIDIA/NeMo/blob/main/tutorials/00_NeMo_Primer.ipynb
+# - https://galhever.medium.com/getting-started-with-nvidia-nemo-asr-1dc9dc09cecb
+
+################################################################################
+
+VENV=""
+
+REPO_NAME='NeMo'
+REPO="https://github.com/NVIDIA/$REPO_NAME.git"
+REPO_DIR_PARENT="$HOME/git"
+REPO_DIR="$REPO_DIR_PARENT/$REPO_NAME"
+
+# Location of this script
+MY_DIR=$(cd "$(dirname "$0")"; pwd -P)
+
+################################################################################
+
+show_usage()
+{
+    printf "Usage: $0 <command>\n"
+    cat <<EOF
+    -C|--clean-all
+    -c|--clean
+    -b|--build
+    -t|--test
+    -h|--help
+
+    Example:
+      $0 -C -b -t
+EOF
+    exit 0
+}
+
+if [[ $# -lt 1 ]]; then
+    show_usage "$@"
+fi
+
+clean_all() {
+    rm -rf "$REPO_DIR"
+}
+
+clean() {
+    echo "minor cleanup"
+}
+
+build() {
+    # Clone repo
+    if [ ! -e "$REPO_DIR" ]; then
+        mkdir -p "$REPO_DIR_PARENT"
+        cd "$REPO_DIR_PARENT"
+        git clone "$REPO" "$REPO_NAME"
+    fi
+
+    # This is done outside this script
+    # Install dependencies
+    #sudo apt-get update && sudo apt-get install -y libsndfile1 ffmpeg
+
+    pip install Cython
+    python -m pip install git+https://github.com/NVIDIA/NeMo.git@main
+
+    pip install nemo-asr
+
+    cd "$REPO_DIR/requirements"
+    for i in ./requirements*.txt; do
+        python -m pip install -r $i
+    done
+
+    # https://hydra.cc/docs/intro/
+    #python -m pip install hydra-core --upgrade
+    #pip install hydra-core --upgrade
+
+    # https://lightning.ai/docs/pytorch/stable/starter/installation.html#install-with-pip
+    #python -m pip install lightning
+    #python -m pip install transformers
+    #python -m pip install sentencepiece
+    #python -m pip install youtokentome
+
+    #if ! pip show boto3REINSTALL; then
+    #    cd "$REPO_DIR/dependencies"
+    #    # Avoid https://github.com/yaml/pyyaml/issues/724
+    #    C=./pip-constraints.avoid-pyyaml-issue-724.txt
+    #    echo 'cython < 3.0' > $C
+    #    # Removed force reinstall. Use "make clean" for clean-slate testing.
+    #    # PIP_CONSTRAINT=$C pip install --force-reinstall
+    #    #
+    #    PIP_CONSTRAINT=$C pip install \
+    #                ../dependencies/awscli-*-py3-none-any.whl \
+    #	            ../dependencies/boto3-*-py3-none-any.whl \
+    #	            ../dependencies/botocore-*-py3-none-any.whl
+    #fi
+
+    #pip install --quiet langchain==0.0.249
+}
+
+test_all() {
+    python --version
+
+}
+
+
+################################################################################
+
+
+while [[ $# -gt 0 ]]; do
+  key="$1"
+
+  case $key in
+    -C|--clean-all)
+        shift
+        clean_all
+        ;;
+    -c|--clean)
+        shift
+        clean
+        ;;
+    -b|--build)
+        shift
+        build
+        ;;
+    t|--test)
+        shift
+        test_all
+        ;;
+    -h|--help)
+        show_usage
+      ;;
+    *)    # unknown option
+      POSITIONAL+=("$1") # save it in an array for later
+      shift # past argument
+      ;;
+  esac
+done

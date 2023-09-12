@@ -92,8 +92,9 @@ setup-node: run-container
 	$(MAKEFILE_PATH)/bin/dev -c "bash -x /tmp/setup-node.sh"
 
 setup-nvidia: run-container
-	docker cp $(MAKEFILE_PATH)post-image-setup/nvidia-dev/setup-nvidia.sh dev:/home/dev/
-	$(MAKEFILE_PATH)/bin/dev -c "bash -x /home/dev/setup-nvidia.sh"
+	docker cp $(MAKEFILE_PATH)post-image-setup/nvidia-dev/Makefile dev:/tmp
+	docker cp $(MAKEFILE_PATH)post-image-setup/nvidia-dev/run dev:/tmp
+	$(MAKEFILE_PATH)/bin/dev -c "cd /tmp && make"
 
 test: | setup-aws setup-node setup-nvidia
 	$(MAKEFILE_PATH)/bin/dev -c "$(TC2)"
