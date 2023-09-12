@@ -1,5 +1,6 @@
-#FROM ubuntu:22.04
-ARG DOCKER_BASE_IMAGE=nvcr.io/nvidia/pytorch:23.08-py3
+#ARG DOCKER_BASE_IMAGE=ubuntu:22.04
+#ARG DOCKER_BASE_IMAGE=nvcr.io/nvidia/pytorch:23.08-py3
+ARG DOCKER_BASE_IMAGE=nvcr.io/nvidia/nemo:23.06
 FROM $DOCKER_BASE_IMAGE
 
 # https://docs.nvidia.com/deeplearning/frameworks/support-matrix/index.html

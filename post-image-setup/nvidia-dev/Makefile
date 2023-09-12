@@ -22,6 +22,7 @@ FORCE:
 
 clean-all: FORCE
 	$(RUN) --clean-all
+	rm -rf $(VENV)
 
 clean: FORCE
 	$(RUN) --clean

@@ -8,7 +8,9 @@ SHELL:=/bin/bash
 DOCKER_TAG:=latest
 DOCKER_IMAGE:=dev-tools:$(DOCKER_TAG)
 
-DOCKER_BASE_IMAGE:=nvcr.io/nvidia/pytorch:23.08-py3
+#DOCKER_BASE_IMAGE:=ubuntu:22.04
+#DOCKER_BASE_IMAGE:=nvcr.io/nvidia/pytorch:23.08-py3
+DOCKER_BASE_IMAGE:=nvcr.io/nvidia/nemo:23.06
 
 # "docker build" args
 #

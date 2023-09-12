@@ -9,8 +9,6 @@ set -e
 
 ################################################################################
 
-VENV=""
-
 REPO_NAME='NeMo'
 REPO="https://github.com/NVIDIA/$REPO_NAME.git"
 REPO_DIR_PARENT="$HOME/git"
@@ -57,45 +55,61 @@ build() {
         git clone "$REPO" "$REPO_NAME"
     fi
 
+    # TODO: clean this up after testing
+    echo "Skipping this since base image is nemo"
+    return
+
     # This is done outside this script
     # Install dependencies
     #sudo apt-get update && sudo apt-get install -y libsndfile1 ffmpeg
+
+    # https://github.com/NVIDIA/apex#linux
+    #   Seems we need >=23
+    pip install --upgrade pip
 
     pip install Cython
     python -m pip install git+https://github.com/NVIDIA/NeMo.git@main
 
     pip install nemo-asr
 
+    LOG=/tmp/requirements.out
+    echo "" > $LOG
+
     cd "$REPO_DIR/requirements"
-    for i in ./requirements*.txt; do
-        python -m pip install -r $i
+    #for i in ./requirements*.txt; do
+    #    python -m pip install -r $i
+    #done
+    F=()
+    F+=("requirements.txt")
+    F+=("requirements_asr.txt")
+    #F+=("requirements_common.txt")
+    #F+=("requirements_docs.txt")
+    #F+=("requirements_lightning.txt")
+    #F+=("requirements_nlp.txt")
+    #F+=("requirements_slu.txt")
+    #F+=("requirements_test.txt")
+    #F+=("requirements_tts.txt")
+    #
+    for i in "${F[@]}"; do
+        python -m pip install -r $i | tee -a $LOG
     done
 
-    # https://hydra.cc/docs/intro/
-    #python -m pip install hydra-core --upgrade
-    #pip install hydra-core --upgrade
 
-    # https://lightning.ai/docs/pytorch/stable/starter/installation.html#install-with-pip
-    #python -m pip install lightning
-    #python -m pip install transformers
-    #python -m pip install sentencepiece
-    #python -m pip install youtokentome
+    # Running the code produced
+    # "Megatron-based models require Apex to function correctly."
+    mkdir -p ~/nvidia
+    cd ~/nvidia
+    if [ ! -e ./apex ]; then
+        git clone https://github.com/NVIDIA/apex
+    fi
+    cd apex
+    # Fails
+    pip install -v --disable-pip-version-check --no-cache-dir --no-build-isolation --config-settings "--build-option=--cpp_ext" --config-settings "--build-option=--cuda_ext" ./
+    # Succeeded
+    pip install -v --disable-pip-version-check --no-cache-dir --no-build-isolation --global-option="--cpp_ext" --global-option="--cuda_ext" ./
 
-    #if ! pip show boto3REINSTALL; then
-    #    cd "$REPO_DIR/dependencies"
-    #    # Avoid https://github.com/yaml/pyyaml/issues/724
-    #    C=./pip-constraints.avoid-pyyaml-issue-724.txt
-    #    echo 'cython < 3.0' > $C
-    #    # Removed force reinstall. Use "make clean" for clean-slate testing.
-    #    # PIP_CONSTRAINT=$C pip install --force-reinstall
-    #    #
-    #    PIP_CONSTRAINT=$C pip install \
-    #                ../dependencies/awscli-*-py3-none-any.whl \
-    #	            ../dependencies/boto3-*-py3-none-any.whl \
-    #	            ../dependencies/botocore-*-py3-none-any.whl
-    #fi
 
-    #pip install --quiet langchain==0.0.249
+    pip list | grep apex
 }
 
 test_all() {
