@@ -256,6 +256,8 @@ kill_server() {
 login_to_server() {
     ensure_server_is_running
 
+    wait_for_ssh
+
     # These all work
     #run_cmd_in_devserver_container "bash -l"
     #ssh -F /dev/null -o "StrictHostKeychecking=no" -o "IdentitiesOnly=yes" -i ~/home_dev/.ssh/id_rsa -p $LOCAL_SSH_PORT -l dev localhost
