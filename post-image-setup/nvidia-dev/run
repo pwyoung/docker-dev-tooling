@@ -6,9 +6,13 @@ set -e
 # - https://github.com/NVIDIA/NeMo
 # - https://github.com/NVIDIA/NeMo/blob/main/tutorials/00_NeMo_Primer.ipynb
 # - https://galhever.medium.com/getting-started-with-nvidia-nemo-asr-1dc9dc09cecb
+#
+# https://github.com/rbriski/nemo-arch/tree/main/packer/scripts
 
 ################################################################################
 
+# TODO: consider removing this
+# For the example code
 REPO_NAME='NeMo'
 REPO="https://github.com/NVIDIA/$REPO_NAME.git"
 REPO_DIR_PARENT="$HOME/git"
@@ -48,12 +52,19 @@ clean() {
 }
 
 build() {
-    # Clone repo
+    # Clone repo (for example code)
     if [ ! -e "$REPO_DIR" ]; then
         mkdir -p "$REPO_DIR_PARENT"
         cd "$REPO_DIR_PARENT"
         git clone "$REPO" "$REPO_NAME"
     fi
+
+    # 21.2.4 -> 23.2.1 (or later)
+    python -m pip install --upgrade pip
+
+    # Nemo app inspired this block
+    #  NOTE! Installing ujson may make loading annotations faster.
+
 
     # TODO: clean this up after testing
     echo "Skipping this since base image is nemo"

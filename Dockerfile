@@ -1,6 +1,6 @@
-#ARG DOCKER_BASE_IMAGE=ubuntu:22.04
+ARG DOCKER_BASE_IMAGE=ubuntu:22.04
 #ARG DOCKER_BASE_IMAGE=nvcr.io/nvidia/pytorch:23.08-py3
-ARG DOCKER_BASE_IMAGE=nvcr.io/nvidia/nemo:23.06
+#ARG DOCKER_BASE_IMAGE=nvcr.io/nvidia/nemo:23.06
 FROM $DOCKER_BASE_IMAGE
 
 # https://docs.nvidia.com/deeplearning/frameworks/support-matrix/index.html
@@ -170,9 +170,26 @@ RUN sudo apt-get update && \
 
 ################################################################################
 # NVIDIA:NEMO
+#   https://docs.nvidia.com/deeplearning/frameworks/pytorch-release-notes/rel-23-08.html#rel-23-08
 ################################################################################
 
 RUN sudo apt-get update && sudo apt-get install -y libsndfile1 ffmpeg
+
+# TODO: move up
+RUN python -m pip install --upgrade pip
+
+#
+# STOPPED HERE
+#
+
+# CUDA
+#RUN wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
+#dpkg -i cuda-keyring_1.1-1_all.deb
+#apt-get update -y
+# image: 12.1.105-1
+# release notes: 12.2.1
+#apt-get install cuda=12.2.1 -y
+
 
 ################################################################################
 # CLEANUP

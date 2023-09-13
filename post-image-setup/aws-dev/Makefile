@@ -10,8 +10,9 @@ MAKEFILE_PATH=$(dir $(realpath $(firstword $(MAKEFILE_LIST))))
 
 .PHONY:=default FORCE all clean clean-all build test
 
-VENV:=$(HOME)/virtual-environments/bedrock
-RUN:=. $(VENV)/venv/bin/activate && $(MAKEFILE_PATH)/run
+PROJECT=aws-bedrock
+VENV_PARENT:=$(HOME)/virtual-environments
+RUN:=. $(VENV_PARENT)/$(PROJECT)/bin/activate && $(MAKEFILE_PATH)/run
 
 default: all
 
@@ -25,7 +26,7 @@ clean: FORCE
 	$(RUN) --clean
 
 venv: FORCE
-	[ -e "$(VENV)/venv" ] || mkdir -p "$(VENV)" && cd "$(VENV)" && python3 -m venv venv
+	[ -e "$(VENV_PARENT)/$(PROJECT)" ] || mkdir -p "$(VENV_PARENT)" && cd "$(VENV_PARENT)" && python3 -m venv $(PROJECT)
 
 build: venv
 	$(RUN) --build
