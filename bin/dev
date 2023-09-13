@@ -13,6 +13,9 @@ export set CONTAINER_NAME='dev'
 # Local SSH port to the dev container's SSH server
 export set LOCAL_SSH_PORT='2222'
 
+# Local SSH port to the dev container's JUPYTER server
+export set LOCAL_JUPYTER_PORT='2228'
+
 # ~/.ssh/config entry providing passwordless SSH to the container
 export set SSH_ALIAS='dev'
 
@@ -35,6 +38,9 @@ run_container() {
     #
     # Allow connections from outside this host
     DARGS+=" -p ${LOCAL_SSH_PORT}:22"
+
+    # Jupyter
+    DARGS+=" -p ${LOCAL_JUPYTER_PORT}:8888"
 
     # Run with an interactive terminal
     #DARGS+=" -t -i"
