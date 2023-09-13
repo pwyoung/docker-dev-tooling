@@ -10,10 +10,9 @@ MAKEFILE_PATH=$(dir $(realpath $(firstword $(MAKEFILE_LIST))))
 
 .PHONY:=default FORCE all clean clean-all build test
 
-PROJECT:=nemo-work
-
-VENV:=$(HOME)/virtual-environments/$(PROJECT)
-RUN:=. $(VENV)/venv/bin/activate && $(MAKEFILE_PATH)/run
+PROJECT=nemo-work
+VENV_PARENT:=$(HOME)/virtual-environments
+RUN:=. $(VENV_PARENT)/$(PROJECT)/bin/activate && $(MAKEFILE_PATH)/run
 
 default: all
 
@@ -22,13 +21,12 @@ FORCE:
 
 clean-all: FORCE
 	$(RUN) --clean-all
-	rm -rf $(VENV)
 
 clean: FORCE
 	$(RUN) --clean
 
 venv: FORCE
-	[ -e "$(VENV)/venv" ] || mkdir -p "$(VENV)" && cd "$(VENV)" && python3 -m venv venv
+	[ -e "$(VENV_PARENT)/$(PROJECT)" ] || mkdir -p "$(VENV_PARENT)" && cd "$(VENV_PARENT)" && python3 -m venv $(PROJECT)
 
 build: venv
 	$(RUN) --build
