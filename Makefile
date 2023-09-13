@@ -1,5 +1,15 @@
 .PHONY:=all build clean docker-image test-image test login review-image run-container setup-aws setup-node test-only
 
+# Notes:
+#   This makes it easy to build and test the dev container.
+#   Here are some examples of how work with this.
+#     If only the Dockerfile changed:
+#       "make docker-image"
+#     If only one of the post-setup steps, such as nvidia setup, changed:
+#       "make setup-nvidia"
+#     Then run "dev -l" to test manually
+
+
 # Directory containing this makefile. Includes trailing /
 MAKEFILE_PATH=$(dir $(realpath $(firstword $(MAKEFILE_LIST))))
 
