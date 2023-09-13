@@ -111,6 +111,8 @@ wait_for_ssh() {
 
 # Run the proxy in the dev container (in the background)
 run_mitm_web() {
+    wait_for_ssh
+
     if ! ssh $SSH_ALIAS "ps | grep mitmweb" &>/dev/null; then
         echo "Running mitweb"
         ssh $SSH_ALIAS "nohup mitmweb &>/dev/null &"
@@ -202,7 +204,6 @@ open_proxying_shell_in_dev_container() {
 
 run_server_with_proxy() {
     ensure_server_is_running
-
     wait_for_ssh
 
     run_mitm_web
@@ -261,7 +262,6 @@ kill_server() {
 
 login_to_server() {
     ensure_server_is_running
-
     wait_for_ssh
 
     # These all work
@@ -272,20 +272,22 @@ login_to_server() {
 
 run_jupyter() {
     ensure_server_is_running
+    wait_for_ssh
 
     # JUPYTER defaults to 8888
     create_tunnel "8888" "8888"
 
-    # Run a project to run a Jupyter server
-    CMD='cd ~/git/nemo-work/tests/pytorch-setup && make'
+    # Run with no permissions
+    CMD="nohup jupyter lab --no-browser --allow-root --ip=0.0.0.0 --NotebookApp.token='' --NotebookApp.password='' &> /tmp/jupyter.log &"
     ssh $SSH_ALIAS "$CMD"
 }
 
 kill_jupyter() {
     ensure_server_is_running
+    wait_for_ssh
 
     # Run a project to kill a Jupyter server
-    CMD='cd ~/git/nemo-work/tests/pytorch-setup && make clean'
+    CMD='killall jupyter-lab'
     ssh $SSH_ALIAS "$CMD"
 }
 
