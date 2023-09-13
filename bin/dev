@@ -82,8 +82,11 @@ run_container() {
         DARGS+=" --ipc=host --ulimit memlock=-1 --ulimit stack=4294967296" # 4 GB
     fi
 
+    # Moved this to Dockerfile/container
     # Start SSH server, run a sleep command forever, and return immediately
-    CMD="sudo service ssh start && service ssh status && nohup sleep infinity"
+    #CMD="sudo service ssh start && service ssh status && nohup sleep infinity"
+    # CMD="nohup sleep infinity"
+    CMD="/start.sh"
     echo "COMMAND:    docker run $DARGS $IMAGE bash -c \"$CMD\"" > /tmp/dev.cmd.out
     docker run $DARGS $IMAGE bash -c "$CMD"
 }
@@ -277,9 +280,12 @@ run_jupyter() {
     # JUPYTER defaults to 8888
     create_tunnel "8888" "8888"
 
-    # Run with no permissions
-    CMD="nohup jupyter lab --no-browser --allow-root --ip=0.0.0.0 --NotebookApp.token='' --NotebookApp.password='' &> /tmp/jupyter.log &"
-    ssh $SSH_ALIAS "$CMD"
+    if ! ps eax | grep -v grep | grep jupyter-lab; then
+        # Run with no permissions
+        #CMD="nohup jupyter lab --no-browser --allow-root --ip=0.0.0.0 --NotebookApp.token='' --NotebookApp.password='' &> /tmp/jupyter.log &"
+        CMD="nohup /start-jupyter.sh &> /tmp/run-jupyter.log &"
+        ssh $SSH_ALIAS "$CMD"
+    fi
 }
 
 kill_jupyter() {

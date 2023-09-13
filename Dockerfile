@@ -190,6 +190,21 @@ RUN python -m pip install --upgrade pip
 # release notes: 12.2.1
 #apt-get install cuda=12.2.1 -y
 
+################################################################################
+# Make it easy to run (many or all) services
+################################################################################
+
+#   SSH
+RUN echo 'sudo service ssh start &> /tmp/start.sh.out' > /start-ssh.sh && \
+  chmod 0755 /start-ssh.sh
+
+#  Jupyter
+RUN echo 'nohup jupyter lab --no-browser --allow-root --ip=0.0.0.0 --NotebookApp.token="" --NotebookApp.password="" &> /tmp/jupyter.log &' > /start-jupyter.sh && \
+  chmod 0755 /start-jupyter.sh
+
+#  Simple Start command
+RUN echo '/start-ssh.sh && /start-jupyter.sh && sleep infinity' > /start.sh && \
+  chmod 0755 /start.sh
 
 ################################################################################
 # CLEANUP
@@ -198,7 +213,7 @@ RUN python -m pip install --upgrade pip
 RUN rm -rf /tmp/*
 
 USER $DEVUSER
-
 WORKDIR $DEVHOME
 
 CMD ["sleep", "infinity"]
+
