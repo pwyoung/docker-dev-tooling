@@ -199,11 +199,11 @@ RUN echo 'sudo service ssh start &> /tmp/start.sh.out' > /start-ssh.sh && \
   chmod 0755 /start-ssh.sh
 
 #  Jupyter
-RUN echo 'nohup jupyter lab --no-browser --allow-root --ip=0.0.0.0 --NotebookApp.token="" --NotebookApp.password="" &> /tmp/jupyter.log &' > /start-jupyter.sh && \
+RUN echo 'nohup jupyter lab --port=8888 --no-browser --allow-root --ip=0.0.0.0 --NotebookApp.token="" --NotebookApp.password="" &> /tmp/jupyter.log &' > /start-jupyter.sh && \
   chmod 0755 /start-jupyter.sh
 
 #  Simple Start command
-RUN echo '/start-ssh.sh && /start-jupyter.sh && sleep infinity' > /start.sh && \
+RUN echo '/start-ssh.sh && /start-jupyter.sh && ' > /start.sh && \
   chmod 0755 /start.sh
 
 ################################################################################
