@@ -379,9 +379,9 @@ while [[ $# -gt 0 ]]; do
         shift
         create_tunnels
         ;;
-    *)    # unknown option
-      POSITIONAL+=("$1") # save it in an array for later
-      shift # past argument
+    *)  # Report this since we don't use positional args
+        echo "Unknown arg: $1" 
+        shift # past argument
       ;;
   esac
 done

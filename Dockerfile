@@ -6,8 +6,9 @@ FROM $DOCKER_BASE_IMAGE
 # https://docs.nvidia.com/deeplearning/frameworks/support-matrix/index.html
 # Confirmed: OS base is Ubuntu 22.04.2 via:
 #   docker run --gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 -it --rm nvcr.io/nvidia/pytorch:23.08-py3 bash -c 'cat /etc/os-release' | grep VERSION
-# Details
+# See
 #   https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/index.html
+#   https://github.com/NVIDIA/NeMo/blob/main/Dockerfile
 
 ARG TZ=UTC
 ARG DEBIAN_FRONTEND=noninteractive
@@ -29,7 +30,6 @@ RUN apt-get update && apt-get install -y $PKGS $PKGS2
 
 ################################################################################
 # SSH server
-#   Don't run it. Do that externally.
 ################################################################################
 
 RUN mkdir -p /run/sshd
@@ -146,8 +146,9 @@ RUN cd /tmp/mitm && \
     mv /tmp/mitm/mitm* /usr/local/bin
 
 ################################################################################
-# Speed testing
+# Network Speed testing
 ################################################################################
+
 RUN curl -s https://packagecloud.io/install/repositories/ookla/speedtest-cli/script.deb.sh | sudo bash \
     && sudo apt update \
     && sudo apt-get install speedtest
@@ -191,20 +192,20 @@ RUN python -m pip install --upgrade pip
 #apt-get install cuda=12.2.1 -y
 
 ################################################################################
-# Make it easy to run (many or all) services
+# Make it easy to run services
 ################################################################################
 
-#   SSH
-RUN echo 'sudo service ssh start &> /tmp/start.sh.out' > /start-ssh.sh && \
-  chmod 0755 /start-ssh.sh
+# SSH
+COPY ./docker-scripts/start-ssh.sh /start-ssh.sh
+RUN chmod 0755 /start-ssh.sh
 
-#  Jupyter
-RUN echo 'nohup jupyter lab --port=8888 --no-browser --allow-root --ip=0.0.0.0 --NotebookApp.token="" --NotebookApp.password="" &> /tmp/jupyter.log &' > /start-jupyter.sh && \
-  chmod 0755 /start-jupyter.sh
+# Jupyter
+COPY ./docker-scripts/start-jupyter.sh /start-jupyter.sh
+RUN chmod 0755 /start-jupyter.sh
 
-#  Simple Start command
-RUN echo '/start-ssh.sh && /start-jupyter.sh && ' > /start.sh && \
-  chmod 0755 /start.sh
+# Simple Start command
+COPY ./docker-scripts/start.sh /start.sh
+RUN chmod 0755 /start.sh
 
 ################################################################################
 # CLEANUP
