@@ -155,7 +155,6 @@ RUN curl -s https://packagecloud.io/install/repositories/ookla/speedtest-cli/scr
 
 RUN sudo apt-get install -y lsof
 
-
 ################################################################################
 # K8S
 ################################################################################
@@ -180,16 +179,8 @@ RUN sudo apt-get update && sudo apt-get install -y libsndfile1 ffmpeg
 RUN python -m pip install --upgrade pip
 
 #
-# STOPPED HERE
+# STOPPED HERE: for now, just base this image on the official Nemo container from NGC
 #
-
-# CUDA
-#RUN wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
-#dpkg -i cuda-keyring_1.1-1_all.deb
-#apt-get update -y
-# image: 12.1.105-1
-# release notes: 12.2.1
-#apt-get install cuda=12.2.1 -y
 
 ################################################################################
 # Make it easy to run services
