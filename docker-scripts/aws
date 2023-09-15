@@ -1,0 +1,5 @@
+#!/bin/bash
+
+. ~/virtual-environments/aws-bedrock/bin/activate
+
+~/virtual-environments/aws-bedrock/bin/aws $@

@@ -214,6 +214,10 @@ RUN chmod 0755 /stop-jupyter.sh
 COPY ./docker-scripts/start.sh /start.sh
 RUN chmod 0755 /start.sh
 
+# AWS bin
+COPY ./docker-scripts/aws /usr/local/bin/aws
+RUN chmod 0755 /usr/local/bin/aws
+
 ################################################################################
 # CLEANUP
 ################################################################################

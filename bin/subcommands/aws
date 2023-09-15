@@ -1,10 +1,8 @@
 #!/bin/bash
 
+ARGS=$@
+
 # Allow this to be called from anywhere.
 MY_DIR=$(cd "$(dirname "$0")"; pwd -P)
 
-CMD=". ~/virtual-environments/aws-bedrock/bin/activate && aws $@"
-$MY_DIR/../dev -c "$CMD"
-
-
-
+$MY_DIR/../dev -c "/usr/local/bin/aws $ARGS"
