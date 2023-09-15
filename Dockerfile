@@ -193,6 +193,8 @@ RUN chmod 0755 /start-ssh.sh
 # Jupyter
 COPY ./docker-scripts/start-jupyter.sh /start-jupyter.sh
 RUN chmod 0755 /start-jupyter.sh
+COPY ./docker-scripts/stop-jupyter.sh /stop-jupyter.sh
+RUN chmod 0755 /stop-jupyter.sh
 
 # Simple Start command
 COPY ./docker-scripts/start.sh /start.sh

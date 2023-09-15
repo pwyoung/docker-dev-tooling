@@ -291,8 +291,7 @@ kill_jupyter() {
     ensure_server_is_running
     wait_for_ssh
 
-    # Run a project to kill a Jupyter server
-    CMD='killall jupyter-lab'
+    CMD='/stop-jupyter.sh'
     ssh $SSH_ALIAS "$CMD"
 }
 
