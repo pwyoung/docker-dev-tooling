@@ -3,7 +3,7 @@
 # Allow this to be called from anywhere.
 MY_DIR=$(cd "$(dirname "$0")"; pwd -P)
 
-CMD="aws $@"
+CMD=". ~/virtual-environments/aws-bedrock/bin/activate && aws $@"
 $MY_DIR/../dev -c "$CMD"
 
 
