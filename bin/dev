@@ -203,6 +203,7 @@ open_proxying_shell_in_dev_container() {
     docker exec -i -t $CONTAINER_NAME bash -l -c "$CMD"
 }
 
+# TODO: move most of this into a script in the container
 run_server_with_proxy() {
     ensure_server_is_running
     wait_for_ssh
