@@ -300,7 +300,6 @@ kill_jupyter() {
 
     CMD='/stop-jupyter.sh'
     run_cmd_in_devserver_container $CMD
-    #ssh $SSH_ALIAS "$CMD"
 }
 
 show_usage() {
