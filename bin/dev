@@ -75,6 +75,16 @@ run_container() {
     # Access GPU (if nvidia runtime is set up)
     # https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/user-guide.html
     # For this: https://github.com/NVIDIA/nvidia-container-toolkit
+    #
+    # See https://github.com/nvidia/nemo#docker-containers
+    # For ARGS used with Nvidia Nemo (Pytorch and Nemo containers)
+    # E.G.
+    #   --gpus all
+    #   --shm-size=8g
+    #   -p 8888:8888
+    #   -p 6006:6006
+    #   --ulimit memlock=-1 --ulimit stack=67108864
+    #   --device=/dev/snd
     if docker info | grep Runtime | grep nvidia &>/dev/null; then
         DARGS+=" --gpus all"
         #DARGS+=" --ipc=host --ulimit memlock=-1 --ulimit stack=67108864" # 64 MB
