@@ -3,26 +3,30 @@
 LOG=/tmp/jupyter.log
 echo "" > $LOG
 
+ARGS="--no-browser --allow-root --ip=0.0.0.0"
+ARGS+=" --port=8888"
+# ARGS+=" --NotebookApp.token='' --NotebookApp.password=''" # No creds
 
-check_jupyter() {
-    if ps eax | grep -v grep | grep jupyter-lab; then
+run_jupyter() {
+    if ps eax | grep -v grep | grep -iv defunct | grep jupyter-lab; then
         echo "jupyter-lab is already running" | tee -a $LOG
-        exit 0
+    else
+        nohup jupyter lab $ARGS &>1 | tee -a $LOG &
     fi
 }
 
-run_jupyter() {
-    nohup jupyter lab \
-          --port=8888 \
-          --no-browser \
-          --allow-root \
-          --ip=0.0.0.0 \
-          --NotebookApp.token="" \
-          --NotebookApp.password="" \
-        &>1 | tee -a $LOG &
+show_token() {
+    for i in $(seq 1 4); do
+        TOKEN=$(jupyter lab list | grep token | perl -pe 's/.*=(.*?) .*/$1/')
+        if [ "$TOKEN" != "" ]; then
+            echo "TOKEN=$TOKEN" | tee -a $LOG
+            break
+        fi
+        sleep 1
+    done
 }
 
-check_jupyter
-
 run_jupyter
+
+show_token
 

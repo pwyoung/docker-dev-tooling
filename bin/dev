@@ -233,6 +233,7 @@ run_server_with_proxy() {
 
 run_cmd_in_devserver_container() {
     CMD="$1"
+    echo "Running command in $CONTAINER_NAME: $CMD"
 
     ensure_server_is_running
 
@@ -289,12 +290,8 @@ run_jupyter() {
     # JUPYTER defaults to 8888
     create_tunnel "8888" "8888"
 
-    if ! ps eax | grep -v grep | grep jupyter-lab; then
-        # Run with no permissions
-        #CMD="nohup jupyter lab --no-browser --allow-root --ip=0.0.0.0 --NotebookApp.token='' --NotebookApp.password='' &> /tmp/jupyter.log &"
-        CMD="nohup /start-jupyter.sh &> /tmp/run-jupyter.log &"
-        ssh $SSH_ALIAS "$CMD"
-    fi
+    CMD="/start-jupyter.sh"
+    run_cmd_in_devserver_container $CMD
 }
 
 kill_jupyter() {
@@ -302,7 +299,8 @@ kill_jupyter() {
     wait_for_ssh
 
     CMD='/stop-jupyter.sh'
-    ssh $SSH_ALIAS "$CMD"
+    run_cmd_in_devserver_container $CMD
+    #ssh $SSH_ALIAS "$CMD"
 }
 
 show_usage() {
@@ -390,7 +388,6 @@ while [[ $# -gt 0 ]]; do
         create_tunnels
         ;;
     *)  # Report this since we don't use positional args
-        echo "Unknown arg: $1"
         shift # past argument
       ;;
   esac

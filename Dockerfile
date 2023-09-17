@@ -191,10 +191,11 @@ RUN python -m pip install --upgrade pip
 #   - pip index versions jupyterlab
 # - Latest STABLE available now is v4.0.5 per
 #   - https://jupyterlab.readthedocs.io/en/stable/user/debugger.html
-# - Latest AWS Sagemaker is v3.0, per
+# - Latest AWS Sagemaker is v3.x, per
 #   - https://docs.aws.amazon.com/sagemaker/latest/dg/nbi-jl.html
 
-RUN python3 -m pip install jupyterlab==4.0.5
+# Use the nemo:23.06 container includes (v2.x)
+# RUN python3 -m pip install jupyterlab==4.0.5
 
 ################################################################################
 # Make it easy to run services
