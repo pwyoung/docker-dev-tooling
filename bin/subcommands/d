@@ -3,10 +3,11 @@
 dev -s -j
 
 URL=$(dev -c "jupyter lab list" | grep token | cut -d' ' -f 1 | perl -pe 's/dev/127.0.0.1/')
+
 if command -v google-chrome; then
-    google-chrome $URL
+    echo "Run google-chrome $URL"
 else
-    open $URL
+    echo "Run open $URL"
 fi
 
 dev -l
