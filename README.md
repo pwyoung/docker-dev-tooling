@@ -25,6 +25,11 @@ Required:
 - Set up ~/home_dev and support passwordless SSH for the dev
   user whose home dir in the contianer, /home/dev,
   will bind to ~/home_dev in the host.
+- Log into NVIDIA NGC
+  This is necessary since the Dockerfile leverages
+  the NVIDIA Nemo container (in place of Ubuntu stock container).
+  Details are at https://ngc.nvidia.com/setup/api-key
+
 
 Example
 - mkdir -p ~/home_dev/.ssh
