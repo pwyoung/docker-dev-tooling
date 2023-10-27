@@ -1,6 +1,6 @@
 #!/bin/bash
 
-LOG=/tmp/ssh.log
+LOG=/tmp/start-ssh.log
 echo "" > $LOG
 
 sudo service ssh start &> $LOG

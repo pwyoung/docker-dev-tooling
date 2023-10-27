@@ -1,11 +1,13 @@
 #!/bin/bash
 
-LOG=/tmp/jupyter.log
+LOG=/tmp/start-jupyter.log
 echo "" > $LOG
 
 ARGS="--no-browser --allow-root --ip=0.0.0.0"
 ARGS+=" --port=8888"
+# Don't expose this except via ssh-tunnels
 # ARGS+=" --NotebookApp.token='' --NotebookApp.password=''" # No creds
+# ARGS+=" --NotebookApp.password='dev'"
 
 run_jupyter() {
     if ps eax | grep -v grep | grep -iv defunct | grep jupyter-lab; then
@@ -17,7 +19,7 @@ run_jupyter() {
 
 show_token() {
     for i in $(seq 1 4); do
-        TOKEN=$(jupyter lab list | grep token | perl -pe 's/.*=(.*?) .*/$1/')
+        TOKEN=$(jupyter notebook list | grep token | perl -pe 's/.*=(.*?) .*/$1/')
         if [ "$TOKEN" != "" ]; then
             echo "TOKEN=$TOKEN" | tee -a $LOG
             break
@@ -29,4 +31,3 @@ show_token() {
 run_jupyter
 
 show_token
-

@@ -92,6 +92,9 @@ run_container() {
         DARGS+=" --ipc=host --ulimit memlock=-1 --ulimit stack=4294967296" # 4 GB
     fi
 
+    # Use host networking (so we can get into VMs in the host)
+    #DARGS+=' --network="host"'
+
     # Moved this to Dockerfile/container
     # Start SSH server, run a sleep command forever, and return immediately
     CMD="/start-ssh.sh && nohup sleep infinity"
