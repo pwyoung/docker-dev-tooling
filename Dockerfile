@@ -19,14 +19,18 @@ SHELL ["/bin/bash", "-c"]
 # OS Packages
 ################################################################################
 
+# Install packages
+# Split up due to timeout issues building this via WSL2
+RUN apt-get update
+
 # Important
-ARG PKGS="wget curl unzip sudo jq groff git software-properties-common graphviz openssh-server"
+RUN apt-get install -y wget curl unzip sudo jq git groff
+RUN apt-get install -y software-properties-common
+RUN apt-get install -y graphviz
+RUN apt-get install -y openssh-server
 
 # Convenient
-ARG PKGS2="pass less tree emacs-nox iputils-ping dnsutils whois htop psmisc bash-completion time net-tools"
-
-# Install packages
-RUN apt-get update && apt-get install -y $PKGS $PKGS2
+RUN apt-get install -y pass less tree emacs-nox iputils-ping dnsutils whois htop psmisc bash-completion time net-tools
 
 ################################################################################
 # SSH server
@@ -123,10 +127,11 @@ RUN apt-get install -y ca-certificates curl apt-transport-https lsb-release gnup
 RUN apt-get update && \
     apt-get install -y dotnet-sdk-7.0
 
-# Mono: warning: apparently this lacks some features of the "real" dotnet version
-# Is not tested on Ubuntu 22.04, only 20.04... per
-# https://www.mono-project.com/download/stable/#download-lin
-# Skipping this.
+# Mono: Don't use it.
+#   Mono apparently lacks some features of the "real" dotnet version.
+#   Mono is not tested on Ubuntu 22.04, only 20.04
+#     per ttps://www.mono-project.com/download/stable/#download-lin
+
 
 ################################################################################
 # WEBAPP DEV
@@ -229,4 +234,3 @@ USER $DEVUSER
 WORKDIR $DEVHOME
 
 CMD ["sleep", "infinity"]
-
