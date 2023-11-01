@@ -90,6 +90,12 @@ run_container() {
         #DARGS+=" --ipc=host --ulimit memlock=-1 --ulimit stack=67108864" # 64 MB
         #DARGS+=" --ipc=host --ulimit memlock=-1 --ulimit stack=2147483648" # 2 GB
         DARGS+=" --ipc=host --ulimit memlock=-1 --ulimit stack=4294967296" # 4 GB
+    else
+        echo "********************************************************************************"
+        echo "WARNING: NVIDIA docker runtime is not available"
+        echo "GPU will not be available inside the container"
+        echo "********************************************************************************"
+        # e.g. "nvidia-smi -L" will not even be available
     fi
 
     # Use host networking (so we can get into VMs in the host)
