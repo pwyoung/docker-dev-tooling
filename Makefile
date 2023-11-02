@@ -49,6 +49,7 @@ RARGS:=$(RARGS) --rm
 
 # Test the image
 TC:=whoami
+TC:=$(TC) && aws --version
 TC:=$(TC) && az --version | grep azure-cli
 TC:=$(TC) && terraform --version
 TC:=$(TC) && terragrunt --version

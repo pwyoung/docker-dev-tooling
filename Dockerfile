@@ -105,9 +105,12 @@ RUN cd /tmp && \
 # Add Terragrunt
 # https://github.com/gruntwork-io/terragrunt/releases
 RUN cd /tmp && \
-  wget https://github.com/gruntwork-io/terragrunt/releases/download/v0.48.4/terragrunt_linux_amd64 -O /usr/local/bin/terragrunt && \
+  wget https://github.com/gruntwork-io/terragrunt/releases/download/v0.53.2/terragrunt_linux_amd64 -O /usr/local/bin/terragrunt && \
   chmod 0755 /usr/local/bin/terragrunt && \
   terragrunt --version
+
+# AWS-Nuke: TODO
+#   https://github.com/rebuy-de/aws-nuke/releases
 
 # MAAS
 RUN apt-add-repository ppa:maas/3.4-next && apt update && apt-get -y install maas
@@ -220,9 +223,20 @@ RUN chmod 0755 /stop-jupyter.sh
 COPY ./docker-scripts/start.sh /start.sh
 RUN chmod 0755 /start.sh
 
+################################################################################
+# AWS
+################################################################################
+
+# This is defunct now that the aws-cli supports Bedrock
 # AWS bin
-COPY ./docker-scripts/aws /usr/local/bin/aws
-RUN chmod 0755 /usr/local/bin/aws
+#COPY ./docker-scripts/aws /usr/local/bin/aws
+#RUN chmod 0755 /usr/local/bin/aws
+
+# https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html#getting-started-install-instructions
+RUN mkdir -p ~/AWS && cd ~/AWS && \
+    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
+    unzip awscliv2.zip && \
+    sudo ./aws/install
 
 ################################################################################
 # CLEANUP

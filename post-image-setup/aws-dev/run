@@ -51,25 +51,24 @@ build() {
         git clone "$REPO" "$REPO_NAME"
     fi
 
-    if [ ! -e "$REPO_DIR/dependencies" ]; then
-        cd "$REPO_DIR"
-        bash ./download-dependencies.sh
-
-    fi
-
-    if ! pip show boto3REINSTALL; then
-        cd "$REPO_DIR/dependencies"
-        # Avoid https://github.com/yaml/pyyaml/issues/724
-        C=./pip-constraints.avoid-pyyaml-issue-724.txt
-        echo 'cython < 3.0' > $C
-        # Removed force reinstall. Use "make clean" for clean-slate testing.
-        # PIP_CONSTRAINT=$C pip install --force-reinstall
-        #
-        PIP_CONSTRAINT=$C pip install \
-                    ../dependencies/awscli-*-py3-none-any.whl \
-	            ../dependencies/boto3-*-py3-none-any.whl \
-	            ../dependencies/botocore-*-py3-none-any.whl
-    fi
+    # This is GONE now. There is no ./download-dependencies.sh in the repo
+    #if [ ! -e "$REPO_DIR/dependencies" ]; then
+    #    cd "$REPO_DIR"
+    #    bash ./download-dependencies.sh
+    #fi
+    # if ! pip show boto3REINSTALL; then
+    #     cd "$REPO_DIR/dependencies"
+    #     # Avoid https://github.com/yaml/pyyaml/issues/724
+    #     C=./pip-constraints.avoid-pyyaml-issue-724.txt
+    #     echo 'cython < 3.0' > $C
+    #     # Removed force reinstall. Use "make clean" for clean-slate testing.
+    #     # PIP_CONSTRAINT=$C pip install --force-reinstall
+    #     #
+    #     PIP_CONSTRAINT=$C pip install \
+    #                 ../dependencies/awscli-*-py3-none-any.whl \
+    #                 ../dependencies/boto3-*-py3-none-any.whl \
+    #                 ../dependencies/botocore-*-py3-none-any.whl
+    # fi
 
     pip install --quiet langchain==0.0.249
 }
