@@ -13,7 +13,7 @@ run_jupyter() {
     if ps eax | grep -v grep | grep -iv defunct | grep jupyter-lab; then
         echo "jupyter-lab is already running" | tee -a $LOG
     else
-        nohup jupyter lab $ARGS &>1 | tee -a $LOG &
+        nohup jupyter lab $ARGS 2>&1 | tee -a $LOG &
     fi
 }
 
