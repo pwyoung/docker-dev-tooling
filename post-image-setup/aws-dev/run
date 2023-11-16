@@ -2,12 +2,10 @@
 
 set -e
 
-################################################################################
+# Debug
+set -x
 
-REPO_NAME='amazon-bedrock-workshop'
-REPO="https://github.com/aws-samples/$REPO_NAME.git"
-REPO_DIR_PARENT="$HOME/git"
-REPO_DIR="$REPO_DIR_PARENT/$REPO_NAME"
+################################################################################
 
 # Location of this script
 MY_DIR=$(cd "$(dirname "$0")"; pwd -P)
@@ -35,61 +33,111 @@ if [[ $# -lt 1 ]]; then
 fi
 
 clean_all() {
-    rm -rf "$REPO_DIR"
+    echo "clean all"   
 }
 
 clean() {
-    rm -rf "$REPO_DIR/dependencies"
-    rm -rf "$REPO_DIR/venv"
-    rm -f "$REPO_DIR/test-bedrock-via-boto.py"
+    echo "clean"   
 }
 
 build() {
-    if [ ! -e "$REPO_DIR" ]; then
-        mkdir -p "$REPO_DIR_PARENT"
-        cd "$REPO_DIR_PARENT"
-        git clone "$REPO" "$REPO_NAME"
-    fi
+    echo "build"   
 
-    # This is GONE now. There is no ./download-dependencies.sh in the repo
-    #if [ ! -e "$REPO_DIR/dependencies" ]; then
-    #    cd "$REPO_DIR"
-    #    bash ./download-dependencies.sh
-    #fi
-    # if ! pip show boto3REINSTALL; then
-    #     cd "$REPO_DIR/dependencies"
-    #     # Avoid https://github.com/yaml/pyyaml/issues/724
-    #     C=./pip-constraints.avoid-pyyaml-issue-724.txt
-    #     echo 'cython < 3.0' > $C
-    #     # Removed force reinstall. Use "make clean" for clean-slate testing.
-    #     # PIP_CONSTRAINT=$C pip install --force-reinstall
-    #     #
-    #     PIP_CONSTRAINT=$C pip install \
-    #                 ../dependencies/awscli-*-py3-none-any.whl \
-    #                 ../dependencies/boto3-*-py3-none-any.whl \
-    #                 ../dependencies/botocore-*-py3-none-any.whl
-    # fi
+    install_minimal_dependencies
 
-    pip install --quiet langchain==0.0.249
+    
+    # Optional requirements, per
+    #   https://github.com/aws-samples/amazon-bedrock-workshop/blob/main/00_Intro/bedrock_boto3_setup.ipynb
+    # SNAFU: the optional deps are mutually exclusive... So, choose one set of dependencies to install here, or skip all optional dependencies
+    #
+    # + pip install -qU --no-cache-dir nemoguardrails==0.5.0
+    #ERROR: pip's dependency resolver does not currently take into account all the packages that are installed. This behaviour is the source of the following dependency conflicts.
+    # langchain-experimental 0.0.40 requires langchain>=0.0.308, but you have langchain 0.0.251 which is incompatible.
+    #
+    # https://github.com/NVIDIA/NeMo-Guardrails/releases
+    # ERROR: pip's dependency resolver does not currently take into account all the packages that are installed.
+    # This behaviour is the source of the following dependency conflicts.
+    # nemoguardrails 0.5.0 requires langchain==0.0.251, but you have langchain 0.0.309 which is incompatible.
+    
 }
 
+# Minimal requirements, per
+#   https://github.com/aws-samples/amazon-bedrock-workshop/blob/main/00_Intro/bedrock_boto3_setup.ipynb
+install_minimal_dependencies() {
+    sudo apt-get install -y sqlite3 libsqlite3-dev    
+    pip install --no-build-isolation --force-reinstall \
+    "boto3>=1.28.57" \
+    "awscli>=1.29.57" \
+    "botocore>=1.31.57"
+}
 
-setup_bedrock() {
+################################################################################
+# Optional requirements, per
+#   https://github.com/aws-samples/amazon-bedrock-workshop/blob/main/00_Intro/bedrock_boto3_setup.ipynb
+################################################################################
+text_deps() {
+    # TEXT
+    pip install --quiet \
+    langchain==0.0.309 \
+    "transformers>=4.24,<5" \
+    sqlalchemy -U \
+    "faiss-cpu>=1.7,<2" \
+    "pypdf>=3.8,<4" \
+    pinecone-client \
+    apache-beam \
+    datasets \
+    tiktoken \
+    "ipywidgets>=7,<8" \
+    matplotlib
+}
+
+agent_deps() {
+    # AGENTS
+    pip install --quiet \
+    xmltodict==0.13.0  \
+    duckduckgo-search  \
+    yfinance  \
+    pandas_datareader  \
+    langchain_experimental \
+    pysqlite3 \
+    google-search-results
+}
+
+entity_deps() {
+    # ENTITY EXTRACTION
+    pip install --quiet beautifulsoup4
+}
+
+image_deps() {
+    # IMAGE
+    pip install --quiet "pillow>=9.5,<10"
+}
+
+guardrails_deps() {
+    # GUARDRAILS
+    sudo apt-get update && sudo apt-get install g++ -y
+    pip install -qU --no-cache-dir nemoguardrails==0.5.0
+    pip install -qU "faiss-cpu>=1.7,<2" \
+        "langchain==0.0.309" \
+        "pypdf>=3.8,<4" \
+        "ipywidgets>=7,<8"
+}
+################################################################################
+
+run_script() {
     # The python script MUST be in the repo dir,
     # because the Python script adds the repo dir as a module (for 'utils' etc)
-    cp "$MY_DIR/test-bedrock-via-boto.py" "$REPO_DIR"
-    cd "$REPO_DIR"
-    python3 ./test-bedrock-via-boto.py || echo "Setup AWS credentials"
+    python3 ./test-bedrock-via-boto.py || echo "Error!"
 }
 
 test_all() {
     aws --version
 
     if aws sts get-caller-identity; then
-	setup_bedrock
+	run_script
     else
 	echo "********************************************************************************"
-	echo "You probably need to set up AWS credentials, in ~/home_dev/.aws/credentials"
+	echo "You probably need to set up AWS credentials, in ~/.aws/credentials"
 	echo "********************************************************************************"
     fi
 }

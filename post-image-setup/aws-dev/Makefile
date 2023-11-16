@@ -34,4 +34,7 @@ build: venv
 test: build
 	$(RUN) --test
 
+test-only: FORCE
+	$(RUN) --test
+
 all: test
