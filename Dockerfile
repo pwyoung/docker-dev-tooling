@@ -176,6 +176,14 @@ RUN sudo apt-get update && \
   sudo apt-get update && \
   sudo apt-get install -y kubectl kubeadm kubecolor kubetail
 
+# Helm
+RUN mkdir -p /root/helm && \
+  cd /root/helm && \
+  wget https://get.helm.sh/helm-v3.13.1-linux-amd64.tar.gz && \
+  tar -zxvf helm-v3.13.1-linux-amd64.tar.gz && \
+  mv -f /root/helm/linux-amd64/helm /usr/local/bin && \
+  chmod 755 /usr/local/bin/helm
+
 ################################################################################
 # NVIDIA:NEMO
 #   https://docs.nvidia.com/deeplearning/frameworks/pytorch-release-notes/rel-23-08.html#rel-23-08
