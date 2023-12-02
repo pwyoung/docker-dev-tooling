@@ -55,7 +55,7 @@ TC:=$(TC) && terraform --version
 TC:=$(TC) && terragrunt --version
 TC:=$(TC) && dotnet --info | head -3
 TC:=$(TC) && kubectl version --client
-TC:=$(TC) && helm version
+TC:=$(TC) && /usr/local/bin/helm version
 
 # Test the final container
 TC2:=whoami
