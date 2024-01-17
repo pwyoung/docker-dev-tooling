@@ -17,6 +17,16 @@ export set LOCAL_SSH_PORT='2222'
 #export set LOCAL_JUPYTER_PORT='2228'
 
 # ~/.ssh/config entry providing passwordless SSH to the container
+#
+# Example ~/.ssh/config entry
+#Host dev
+#  HostName 127.0.0.1
+#  User dev
+#  Port 2222
+#  LogLevel FATAL
+#  UserKnownHostsFile /dev/null
+#  StrictHostKeyChecking no
+#  PasswordAuthentication no
 export set SSH_ALIAS='dev'
 
 ################################################################################
