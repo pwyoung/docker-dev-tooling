@@ -127,13 +127,15 @@ ensure_server_is_running() {
 
 # Wait for the container to allow SSH connections
 wait_for_ssh() {
-    for i in {1..9}; do
+    N=3
+
+    for i in {1..$N}; do
         echo "Attempt to SSH to $SSH_ALIAS number $i"
         ssh $SSH_ALIAS 'hostname' && break
         sleep 1
     done
 
-    if [[ $i -eq 9 ]]; then
+    if [[ $i -eq $N ]]; then
         echo "$SSH_ALIAS container is not responding"
         exit 1
     fi

@@ -1,7 +1,4 @@
-#ARG DOCKER_BASE_IMAGE=ubuntu:22.04
-#ARG DOCKER_BASE_IMAGE=nvcr.io/nvidia/pytorch:23.08-py3
-ARG DOCKER_BASE_IMAGE=nvcr.io/nvidia/nemo:23.08
-FROM $DOCKER_BASE_IMAGE
+FROM nvcr.io/nvidia/nemo:24.05.01
 
 # https://docs.nvidia.com/deeplearning/frameworks/support-matrix/index.html
 # Confirmed: OS base is Ubuntu 22.04.2 via:
@@ -21,16 +18,10 @@ SHELL ["/bin/bash", "-c"]
 
 # Install packages
 # Split up due to timeout issues building this via WSL2
-RUN apt-get update
-
-# Important
-RUN apt-get install -y wget curl unzip sudo jq git groff
-RUN apt-get install -y software-properties-common
-RUN apt-get install -y graphviz
-RUN apt-get install -y openssh-server
-
-# Convenient
-RUN apt-get install -y pass less tree emacs-nox iputils-ping dnsutils whois htop psmisc bash-completion time net-tools
+RUN apt-get update && \
+  apt-get install -y \
+  wget curl unzip sudo jq git groff software-properties-common graphviz openssh-server \
+  pass less tree emacs-nox iputils-ping dnsutils whois htop psmisc bash-completion time net-tools
 
 ################################################################################
 # SSH server
@@ -113,7 +104,7 @@ RUN cd /tmp && \
 #   https://github.com/rebuy-de/aws-nuke/releases
 
 # MAAS
-RUN apt-add-repository ppa:maas/3.4-next && apt update && apt-get -y install maas
+# RUN apt-add-repository ppa:maas/3.4-next && apt update && apt-get -y install maas
 
 ################################################################################
 # MICROSOFT: Azure, DotNet
@@ -130,11 +121,6 @@ RUN apt-get install -y ca-certificates curl apt-transport-https lsb-release gnup
 RUN apt-get update && \
     apt-get install -y dotnet-sdk-7.0
 
-# Mono: Don't use it.
-#   Mono apparently lacks some features of the "real" dotnet version.
-#   Mono is not tested on Ubuntu 22.04, only 20.04
-#     per ttps://www.mono-project.com/download/stable/#download-lin
-
 
 ################################################################################
 # WEBAPP DEV
@@ -146,9 +132,8 @@ RUN apt-get update && \
 RUN mkdir -p /tmp/mitm && \
     cd /tmp/mitm && \
     wget https://downloads.mitmproxy.org/10.0.0/mitmproxy-10.0.0-linux.tar.gz && \
-    tar xvzf mitmproxy-*-linux.tar.gz
-
-RUN cd /tmp/mitm && \
+    tar xvzf mitmproxy-*-linux.tar.gz && \
+    cd /tmp/mitm && \
     chmod 755 /tmp/mitm/mitm* && \
     chown $DEVUID:$DEVUID /tmp/mitm/mitm* && \
     mv /tmp/mitm/mitm* /usr/local/bin
@@ -158,10 +143,7 @@ RUN cd /tmp/mitm && \
 ################################################################################
 
 RUN curl -s https://packagecloud.io/install/repositories/ookla/speedtest-cli/script.deb.sh | sudo bash \
-    && sudo apt update \
-    && sudo apt-get install speedtest
-
-RUN sudo apt-get install -y lsof
+    && sudo apt update && sudo apt-get install speedtest && sudo apt-get install -y lsof
 
 ################################################################################
 # K8S
@@ -174,19 +156,14 @@ RUN sudo apt-get update && \
   curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.28/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg && \
   echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.28/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list && \
   sudo apt-get update && \
-  sudo apt-get install -y kubectl kubeadm kubecolor kubetail
-
-# Helm
-RUN mkdir -p /root/helm && \
+  sudo apt-get install -y kubectl kubeadm kubecolor kubetail && \
+  mkdir -p /root/helm && \
   cd /root/helm && \
   wget https://get.helm.sh/helm-v3.13.1-linux-amd64.tar.gz && \
   tar -zxvf helm-v3.13.1-linux-amd64.tar.gz && \
   mv -f /root/helm/linux-amd64/helm /usr/local/bin && \
   chmod 755 /usr/local/bin/helm
 
-################################################################################
-# NVIDIA:NEMO
-#   https://docs.nvidia.com/deeplearning/frameworks/pytorch-release-notes/rel-23-08.html#rel-23-08
 ################################################################################
 
 RUN sudo apt-get update && sudo apt-get install -y libsndfile1 ffmpeg
@@ -197,21 +174,6 @@ RUN python -m pip install --upgrade pip
 #
 # STOPPED HERE: for now, just base this image on the official Nemo container from NGC
 #
-
-################################################################################
-# JUPYTER
-################################################################################
-
-# Show versions available
-# - Latest available now is v4.0.6 per
-#   - pip index versions jupyterlab
-# - Latest STABLE available now is v4.0.5 per
-#   - https://jupyterlab.readthedocs.io/en/stable/user/debugger.html
-# - Latest AWS Sagemaker is v3.x, per
-#   - https://docs.aws.amazon.com/sagemaker/latest/dg/nbi-jl.html
-
-# Use the nemo:23.06 container includes (v2.x)
-# RUN python3 -m pip install jupyterlab==4.0.5
 
 ################################################################################
 # Make it easy to run services
@@ -249,8 +211,12 @@ RUN mkdir -p ~/AWS && cd ~/AWS && \
 ################################################################################
 # ANSIBLE
 ################################################################################
+RUN sudo apt update &&\
+  sudo apt-get install -y software-properties-common &&\
+  sudo add-apt-repository --yes --update ppa:ansible/ansible
 
-RUN sudo apt-get install -y ansible
+# RUN sudo apt install -y ansible
+
 
 ################################################################################
 # CLEANUP

@@ -18,10 +18,6 @@ SHELL:=/bin/bash
 DOCKER_TAG:=latest
 DOCKER_IMAGE:=dev-tools:$(DOCKER_TAG)
 
-#DOCKER_BASE_IMAGE:=ubuntu:22.04
-#DOCKER_BASE_IMAGE:=nvcr.io/nvidia/pytorch:23.08-py3
-DOCKER_BASE_IMAGE:=nvcr.io/nvidia/nemo:23.06
-
 # "docker build" args
 #
 # Assign the image name (repo:tag)
@@ -75,11 +71,7 @@ clean: FORCE
 	$(info Clean)
 	docker rmi $(DOCKER_IMAGE) || true
 
-# Speed up rebuilds
-get-base-image: FORCE
-	docker pull $(DOCKER_BASE_IMAGE)
-
-docker-image: get-base-image
+docker-image: FORCE
 	$(info Build Docker Image)
 	BUILDAH_FORMAT=docker DOCKER_BUILDKIT=1 docker build $(BARGS) .
 
