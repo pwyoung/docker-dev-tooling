@@ -294,36 +294,16 @@ kill_server() {
     docker kill $CONTAINER_NAME &>/dev/null || true
 }
 
-# Try a few times to SSH to 'dev'.
-# If SSH fails, fall back to 'docker exec' to connect to the container,
-# and tell the user they need to configure ~/.ssh to allow passwordless connections.
+# Exec into the running container
+#
 login_to_server() {
-    # These all work, if the server is running and the authorized_keys are configured properly
-    #
-    #run_cmd_in_devserver_container "bash -l"
-    #ssh -F /dev/null -o "StrictHostKeychecking=no" -o "IdentitiesOnly=yes" -i ~/home_dev/.ssh/id_rsa -p $LOCAL_SSH_PORT -l dev localhost
-    #ssh $SSH_ALIAS
-
     ensure_server_is_running
 
-    # wait_for_ssh
-    for i in {1..3}; do
-        echo "Attempt to SSH to $SSH_ALIAS number $i"
-        ssh $SSH_ALIAS 'hostname' && break
-        sleep 1
-    done
+    run_cmd_in_devserver_container "bash -l"
 
-    # Try SSH first, and if that fails, alert the user and just use exec.
-    if [[ $i -eq 3 ]]; then
-        echo "$SSH_ALIAS container is not responding"
-        echo "Set up passwordless-ssh to 'dev'"
-        echo "IE: ~/home_dev/.ssh/authorized_keys must contain a public key from ~/.ssh/*.pub"
-        echo "Falling back to 'docker exec'"
-        run_cmd_in_devserver_container "bash -l"
-    else
-        ssh $SSH_ALIAS
-    fi
-
+    # SSH into the server
+    #sleep 0.5 # Give SSH server time to come up
+    #run_cmd_in_devserver_container "bash -l"
 }
 
 run_jupyter() {

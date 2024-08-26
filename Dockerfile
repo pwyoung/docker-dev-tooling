@@ -110,16 +110,23 @@ RUN cd /tmp && \
 # MICROSOFT: Azure, DotNet
 ################################################################################
 
-#  https://docs.microsoft.com/en-us/cli/azure/install-azure-cli-linux?pivots=apt
+# AZURE CLI
+#   https://docs.microsoft.com/en-us/cli/azure/install-azure-cli-linux?pivots=apt
 RUN apt-get install -y ca-certificates curl apt-transport-https lsb-release gnupg && \
   curl -sL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor | tee /etc/apt/trusted.gpg.d/microsoft.gpg > /dev/null && \
   echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/azure-cli.list && \
   apt-get update -y && apt-get install -y azure-cli && \
   az --version | grep azure-cli
 
-# https://learn.microsoft.com/en-us/dotnet/core/install/linux-ubuntu-2204
+# DOTNET-7
+#   https://learn.microsoft.com/en-us/dotnet/core/install/linux-ubuntu-2204
+#RUN apt-get update && \
+#    apt-get install -y dotnet-sdk-7.0
+
+# DOTNET-8
+#   https://learn.microsoft.com/en-us/dotnet/core/install/linux-ubuntu-install?pivots=os-linux-ubuntu-2204&tabs=dotnet8#install-the-sdk
 RUN apt-get update && \
-    apt-get install -y dotnet-sdk-7.0
+    apt-get install -y dotnet-sdk-8.0
 
 
 ################################################################################
@@ -171,10 +178,6 @@ RUN sudo apt-get update && sudo apt-get install -y libsndfile1 ffmpeg
 # TODO: move up
 RUN python -m pip install --upgrade pip
 
-#
-# STOPPED HERE: for now, just base this image on the official Nemo container from NGC
-#
-
 ################################################################################
 # Make it easy to run services
 ################################################################################
@@ -196,11 +199,6 @@ RUN chmod 0755 /start.sh
 ################################################################################
 # AWS
 ################################################################################
-
-# This is defunct now that the aws-cli supports Bedrock
-# AWS bin
-#COPY ./docker-scripts/aws /usr/local/bin/aws
-#RUN chmod 0755 /usr/local/bin/aws
 
 # https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html#getting-started-install-instructions
 RUN mkdir -p ~/AWS && cd ~/AWS && \
