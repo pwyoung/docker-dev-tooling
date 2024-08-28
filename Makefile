@@ -1,14 +1,7 @@
-.PHONY:=all build clean docker-image test-image test login review-image run-container setup-aws setup-node test-only
-
-# Notes:
-#   This makes it easy to build and test the dev container.
-#   Here are some examples of how work with this.
-#     If only the Dockerfile changed:
-#       "make docker-image"
-#     If only one of the post-setup steps, such as nvidia setup, changed:
-#       "make setup-nvidia"
-#     Then run "dev -l" to test manually
-
+# GOAL
+#  Create a docker container that works like a dev VM
+#  so that we don't have to hear "it works for me" but not you.
+#  Use a host directory as the HOME directory of the dev user
 
 # Directory containing this makefile. Includes trailing /
 MAKEFILE_PATH=$(dir $(realpath $(firstword $(MAKEFILE_LIST))))
@@ -22,9 +15,14 @@ DOCKER_IMAGE:=dev-tools:$(DOCKER_TAG)
 #
 # Assign the image name (repo:tag)
 BARGS:=-t $(DOCKER_IMAGE)
-# Force (re)build to occur
+#
+# Force (re)build to occur (slow, but always a clean slate)
 #BARGS:=$(BARGS) --no-cache
 #
+# Be compatible with Intel/AMD even if on ARM (e.g. Apple Silicon)
+# Use "DOCKER_DEFAULT_PLATFORM=linux/amd64" instead
+#BARGS:=$(BARGS) --platform=linux/amd64
+
 # Match the USERID so to avoid complants,
 # e.g. that ~/.ssh/config has the wrong owner
 HOST_UID:=$(shell id -u)
@@ -43,68 +41,44 @@ RARGS:=-t -i
 # Remove container when it stops running
 RARGS:=$(RARGS) --rm
 
-# Test the image
-TC:=whoami
-TC:=$(TC) && aws --version
-TC:=$(TC) && az --version | grep azure-cli
-TC:=$(TC) && terraform --version
-TC:=$(TC) && terragrunt --version
-TC:=$(TC) && dotnet --info | head -3
-TC:=$(TC) && kubectl version --client
-TC:=$(TC) && /usr/local/bin/helm version
-
-# Test the final container
-TC2:=whoami
-TC2:=$(TC2) && . ~/virtual-environments/bedrock/venv/bin/activate && aws --version
-TC2:=$(TC2) && mitmproxy --version
-TC2:=$(TC2) && node --version
-TC2:=$(TC2) && npm --version
-TC2:=$(TC2) && yes | tr 'y' "\n" | ng version
-TC2:=$(TC2) && ~/nvidia/ngc-cli/ngc --version
-TC2:=$(TC)
-
+.PHONY:=all
 all: test
 
+.PHONY:=FORCE
 FORCE:
 
+.PHONY:=clean
 clean: FORCE
 	$(info Clean)
 	docker rmi $(DOCKER_IMAGE) || true
 
+.PHONY:=docker-image
 docker-image: FORCE
 	$(info Build Docker Image)
 	BUILDAH_FORMAT=docker DOCKER_BUILDKIT=1 docker build $(BARGS) .
 
-test-image: docker-image
+.PHONY:=test
+test: docker-image
 	$(info Running test scripts)
-	docker run $(RARGS) $(DOCKER_IMAGE) bash -c "$(TC)"
+	docker run $(RARGS) $(DOCKER_IMAGE) bash -c "aws --version"
+	docker run $(RARGS) $(DOCKER_IMAGE) bash -c "az --version"
+	docker run $(RARGS) $(DOCKER_IMAGE) bash -c "terraform --version"
+	docker run $(RARGS) $(DOCKER_IMAGE) bash -c "terragrunt --version"
+	docker run $(RARGS) $(DOCKER_IMAGE) bash -c "dotnet --info | head -3"
+	docker run $(RARGS) $(DOCKER_IMAGE) bash -c "kubectl version --client"
+	docker run $(RARGS) $(DOCKER_IMAGE) bash -c "helm version"
+	docker run $(RARGS) $(DOCKER_IMAGE) bash -c "mitmproxy --version"
 
-run-container: test-image
-	$(MAKEFILE_PATH)/bin/dev -s
 
-################################################################################
-# post-container creation setup
-#   This is for files that must live in ~dev (i.e. ~/home_dev)
-################################################################################
+.PHONY:=run-container
+run-container: docker-image
+	$(MAKEFILE_PATH)/bin/dev -s || echo "error starting container"
 
-setup-aws: run-container
-	docker cp $(MAKEFILE_PATH)post-image-setup/aws-dev/Makefile dev:/tmp/
-	docker cp $(MAKEFILE_PATH)post-image-setup/aws-dev/run dev:/tmp/
-	docker cp $(MAKEFILE_PATH)post-image-setup/aws-dev/test-bedrock-via-boto.py dev:/tmp/
-	$(MAKEFILE_PATH)/bin/dev -c "cd /tmp && make"
-
+.PHONY:=setup-node
 setup-node: run-container
-	docker cp $(MAKEFILE_PATH)post-image-setup/node-dev/setup-node.sh dev:/tmp/
-	$(MAKEFILE_PATH)/bin/dev -c "bash -x /tmp/setup-node.sh"
-
-setup-nvidia: run-container
-	docker cp $(MAKEFILE_PATH)post-image-setup/nvidia-dev/Makefile dev:/tmp
-	docker cp $(MAKEFILE_PATH)post-image-setup/nvidia-dev/run dev:/tmp
-	$(MAKEFILE_PATH)/bin/dev -c "cd /tmp && make"
-
-test: | setup-aws setup-node setup-nvidia
-	$(MAKEFILE_PATH)/bin/dev -c "$(TC2)"
-
+	echo "Setting up node 1"
+	$(MAKEFILE_PATH)/bin/dev -c "bash -x /setup-node.sh"
+	echo "Setting up node X"
 
 ################################################################################
 # Manually invoked make targets (for dev/test)
@@ -120,6 +94,3 @@ login: FORCE
 	$(info Logging into container)
 	docker run $(RARGS) $(DOCKER_IMAGE) bash -l
 
-test-only: FORCE
-	$(MAKEFILE_PATH)/bin/dev -c "$(TC)"
-	$(MAKEFILE_PATH)/bin/dev -c "$(TC2)"

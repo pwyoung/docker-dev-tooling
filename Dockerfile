@@ -1,8 +1,12 @@
-FROM nvcr.io/nvidia/nemo:24.05.01
+FROM ubuntu:22.04
+# FROM nvcr.io/nvidia/nemo:24.05.01
+
+# https://catalog.ngc.nvidia.com/orgs/nvidia/containers/nemo/tags
+#FROM nvcr.io/nvidia/nemo:dev
 
 # https://docs.nvidia.com/deeplearning/frameworks/support-matrix/index.html
-# Confirmed: OS base is Ubuntu 22.04.2 via:
-#   docker run --gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 -it --rm nvcr.io/nvidia/pytorch:23.08-py3 bash -c 'cat /etc/os-release' | grep VERSION
+# Confirmed: OS base via:
+#   docker run --gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 -it --rm nvcr.io/nvidia/nemo:dev bash -c 'cat /etc/os-release' | grep VERSION
 # See
 #   https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/index.html
 #   https://github.com/NVIDIA/NeMo/blob/main/Dockerfile
@@ -33,7 +37,7 @@ RUN mkdir -p /run/sshd
 # "dev" user
 ################################################################################
 
-# Remember, ARGs are not secure
+# Note: ARGs are not secure
 ARG DEVUSER=dev
 ARG DEVPW=dev
 ARG DEVHOME=/home/dev
@@ -87,11 +91,15 @@ RUN apt-get update && apt-get install -y $PKGS
 ################################################################################
 
 # Add Terraform
-#   https://www.terraform.io/downloads
-RUN cd /tmp && \
-  curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add - && \
-  apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main" && \
-  apt-get update && apt-get install terraform
+#   https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli
+RUN sudo apt-get update && sudo apt-get install -y gnupg software-properties-common
+RUN wget -O- https://apt.releases.hashicorp.com/gpg | \
+    gpg --dearmor | \
+    sudo tee /usr/share/keyrings/hashicorp-archive-keyring.gpg > /dev/null
+RUN echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] \
+    https://apt.releases.hashicorp.com $(lsb_release -cs) main" | \
+    sudo tee /etc/apt/sources.list.d/hashicorp.list
+RUN sudo apt update && sudo apt-get install terraform
 
 # Add Terragrunt
 # https://github.com/gruntwork-io/terragrunt/releases
@@ -99,35 +107,6 @@ RUN cd /tmp && \
   wget https://github.com/gruntwork-io/terragrunt/releases/download/v0.53.2/terragrunt_linux_amd64 -O /usr/local/bin/terragrunt && \
   chmod 0755 /usr/local/bin/terragrunt && \
   terragrunt --version
-
-# AWS-Nuke: TODO
-#   https://github.com/rebuy-de/aws-nuke/releases
-
-# MAAS
-# RUN apt-add-repository ppa:maas/3.4-next && apt update && apt-get -y install maas
-
-################################################################################
-# MICROSOFT: Azure, DotNet
-################################################################################
-
-# AZURE CLI
-#   https://docs.microsoft.com/en-us/cli/azure/install-azure-cli-linux?pivots=apt
-RUN apt-get install -y ca-certificates curl apt-transport-https lsb-release gnupg && \
-  curl -sL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor | tee /etc/apt/trusted.gpg.d/microsoft.gpg > /dev/null && \
-  echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/azure-cli.list && \
-  apt-get update -y && apt-get install -y azure-cli && \
-  az --version | grep azure-cli
-
-# DOTNET-7
-#   https://learn.microsoft.com/en-us/dotnet/core/install/linux-ubuntu-2204
-#RUN apt-get update && \
-#    apt-get install -y dotnet-sdk-7.0
-
-# DOTNET-8
-#   https://learn.microsoft.com/en-us/dotnet/core/install/linux-ubuntu-install?pivots=os-linux-ubuntu-2204&tabs=dotnet8#install-the-sdk
-RUN apt-get update && \
-    apt-get install -y dotnet-sdk-8.0
-
 
 ################################################################################
 # WEBAPP DEV
@@ -149,8 +128,8 @@ RUN mkdir -p /tmp/mitm && \
 # Network Speed testing
 ################################################################################
 
-RUN curl -s https://packagecloud.io/install/repositories/ookla/speedtest-cli/script.deb.sh | sudo bash \
-    && sudo apt update && sudo apt-get install speedtest && sudo apt-get install -y lsof
+#RUN curl -s https://packagecloud.io/install/repositories/ookla/speedtest-cli/script.deb.sh | sudo bash \
+#    && sudo apt update && sudo apt-get install speedtest && sudo apt-get install -y lsof
 
 ################################################################################
 # K8S
@@ -173,10 +152,9 @@ RUN sudo apt-get update && \
 
 ################################################################################
 
-RUN sudo apt-get update && sudo apt-get install -y libsndfile1 ffmpeg
+# TODO: remove
+#RUN sudo apt-get update && sudo apt-get install -y libsndfile1 ffmpeg
 
-# TODO: move up
-RUN python -m pip install --upgrade pip
 
 ################################################################################
 # Make it easy to run services
@@ -209,18 +187,42 @@ RUN mkdir -p ~/AWS && cd ~/AWS && \
 ################################################################################
 # ANSIBLE
 ################################################################################
-RUN sudo apt update &&\
-  sudo apt-get install -y software-properties-common &&\
-  sudo add-apt-repository --yes --update ppa:ansible/ansible
 
+# Activate this when needed
+#RUN sudo apt update &&\
+#  sudo apt-get install -y software-properties-common &&\
+#  sudo add-apt-repository --yes --update ppa:ansible/ansible
+#
 # RUN sudo apt install -y ansible
 
+################################################################################
+# MICROSOFT: Azure, DotNet
+################################################################################
+
+# AZURE CLI
+#   https://learn.microsoft.com/en-us/cli/azure/install-azure-cli-linux?pivots=apt
+RUN curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+RUN az --version | grep azure-cli
+
+# DOTNET
+#   https://learn.microsoft.com/en-us/dotnet/core/install/linux-ubuntu-install?pivots=os-linux-ubuntu-2204&tabs=dotnet8#install-the-sdk
+RUN apt-get update && \
+    apt-get install -y dotnet-sdk-8.0
 
 ################################################################################
-# CLEANUP
+# JUPYTER
 ################################################################################
 
-RUN rm -rf /tmp/*
+# This is already installed on Nemo containers
+RUN jupyter --version || pip3 install jupyter
+
+################################################################################
+# NVM, NODE, etc
+################################################################################
+
+COPY --chown=$DEVUSER --chmod=0755 post-image-setup/node-dev/setup-node.sh /setup-node.sh
+
+################################################################################
 
 USER $DEVUSER
 WORKDIR $DEVHOME
